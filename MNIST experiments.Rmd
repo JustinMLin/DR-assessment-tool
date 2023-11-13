@@ -1,0 +1,56 @@
+---
+title: "MNIST experiments"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(igraph)
+library(Rtsne)
+library(dslabs)
+library(dplyr)
+library(plotly)
+
+source("Algorithms/DR assessment tool algs.R")
+```
+
+```{r}
+n = 2000
+p = 300
+
+data = read_mnist()$train
+subsample = sample(1:60000, n)
+
+Z = data$images[subsample,]
+labels = data$labels[subsample]
+
+Z_pca = prcomp(Z, rank. = p)$x
+g = get_mst(Z_pca)
+
+X = Rtsne(Z, dims = 2, perplexity = 30)$Y
+```
+
+```{r}
+df_long = data.frame(x = X[,1], y = X[,2], labels = labels)
+
+p1 =  ggplot(df_long, aes(x = x, y = y, color = factor(labels), text = 1:n)) +
+  geom_point(size = 1) +
+  labs(color = "Digit")
+
+ggplotly(p1, tooltip = c("x", "y", "text"))
+```
+
+
+```{r}
+p2 = plot_path(Z_pca, X, 889, 313, labels = labels)
+ggplotly(p2, tooltip = c("x", "y", "label"))
+```
+
+```{r}
+save(Z_pca, g, X, df_long, labels, file = "Data/MNIST data.Rda")
+```
+
