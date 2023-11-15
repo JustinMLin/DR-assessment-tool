@@ -10,22 +10,23 @@ source("../Algorithms/DR assessment tool algs.R")
 
 load("../Data/MNIST data.Rda")
 
-Z_mst = get_mst(Z_pca)
-p = ggplot(df_long, aes(x = x, y = y, color = factor(labels))) +
-  geom_point(size = 1) +
-  labs(color = "Digit")
-
+Z_mst = g
+p = ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
+   geom_point(size = 1) +
+   labs(title = "t-SNE embedding of MNIST dataset", color = "Digit")
+  
 ui = fluidPage(
-  titlePanel("MNIST"),
+  titlePanel("DR Assessment Tool"),
   
   sidebarLayout(
     sidebarPanel(
-      numericInput("from", "From", value = 1, min = 1, max = length(X[,1])),
-      numericInput("to", "To", value = 2, min = 1, length(X[,1]))
+      numericInput("from", "From id", value = 1, min = 1, max = length(X[,1])),
+      numericInput("to", "To id", value = 2, min = 1, length(X[,1]))
     ),
     
-    mainPanel(
-      plotlyOutput("tsnePlot")
+    mainPanel("Plots",
+      fluidRow(column(6, plotlyOutput("tsnePlot"))),
+      fluidRow(column(6, plotOutput("pathWeights")))    
     )
   )
 )
@@ -33,8 +34,22 @@ ui = fluidPage(
 server = function(input, output) {
   
   output$tsnePlot = renderPlotly({
+    ggplotly(add_path(p, df_long, input$from, input$to, Z_mst),
+             tooltip = c("x", "y", "label"))
+  })
+  
+  output$pathWeights = renderPlot({
+    path_weights = get_path_weights(get_shortest_path(g, input$from, input$to)$epath)
+    x = seq(from = 0, to = 10, length.out = length(path_weights))
     
-    ggplotly(add_path(p, df_long, input$from, input$to, Z_mst))
+    data.frame(x = x, weight = path_weights) %>%
+      ggplot(aes(x = x, y = weight)) + 
+        geom_point() + 
+        geom_line() +
+        labs(title = "MST Path Weights", y = "Weight") +
+        theme(axis.title.x = element_blank(),
+              axis.text.x = element_blank(),
+              axis.ticks.x = element_blank())
   })
 }
 
