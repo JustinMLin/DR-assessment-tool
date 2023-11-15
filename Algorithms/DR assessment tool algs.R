@@ -13,7 +13,9 @@ get_shortest_path = function(graph, from, to) {
        vpath = path$vpath[[1]])
 }
 
-get_path_weights = function(epath) {
+get_path_weights = function(path) {
+  epath = path$epath
+  
   if (class(epath) != "igraph.es") {
     error("get_path_weights: input is not of type igraph.es")
   }
@@ -23,6 +25,23 @@ get_path_weights = function(epath) {
   
   for (i in 1:num_paths) {
     weights[i] = epath[[i]]$weight
+  }
+  
+  weights
+}
+
+get_emb_path_weights = function(X, path) {
+  vpath = path$vpath
+  
+  if (class(vpath) != "igraph.vs") {
+    error("get_path_weights: input is not of type igraph.es")
+  }
+  
+  num_paths = length(vpath) - 1
+  weights = vector(length = num_paths)
+  
+  for (i in 1:num_paths) {
+    weights[i] = norm(X[vpath[i],] - X[vpath[i+1],], type="2")
   }
   
   weights

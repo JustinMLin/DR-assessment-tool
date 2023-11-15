@@ -30,7 +30,7 @@ path_num = weights = x = cluster = vector()
 
 for (i in 1:num_paths) {
   points = sample(1:n, 2)
-  path_weights = get_path_weights(get_shortest_path(g, points[1], points[2])$epath)
+  path_weights = get_path_weights(get_shortest_path(g, points[1], points[2]))
   
   path_num = c(path_num, rep(i, length(path_weights)))
   weights = c(weights, path_weights)
