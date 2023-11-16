@@ -66,11 +66,19 @@ plot_path = function(Z, X, from, to, labels = NULL) {
   }
 }
 
-add_path = function(plot, df, from, to, mst) {
-  vpath = get_shortest_path(mst, from, to)$vpath
+add_path = function(plot, df, path, path_component = 0) {
+  vpath = path$vpath
   
   col = ifelse(is.null(plot$labels$colour),
                "red", "black")
   
-  plot + geom_path(data = df[as.numeric(vpath),], color = col)
+  if (path_component != 0) {
+    p + geom_path(data = df[as.numeric(vpath)[1:path_component],], color = col) +
+      geom_path(data = df[as.numeric(vpath)[path_component:(path_component+1)],], 
+                color = ifelse(col == "red","blue","red")) + 
+      geom_path(data = df[as.numeric(vpath)[(path_component+1):length(vpath)],], color = col)
+  }
+  else {
+    p + geom_path(data = df[as.numeric(vpath),], color = col)
+  }
 }

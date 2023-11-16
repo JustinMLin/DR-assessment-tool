@@ -35,19 +35,19 @@ X = Rtsne(Z, dims = 2, perplexity = 30)$Y
 ```
 
 ```{r}
-df_long = data.frame(x = X[,1], y = X[,2], labels = labels, id = 1:n)
+df_long = data.frame(x = X[,1], y = X[,2], labels = labels, id = subsample)
 
-p1 =  ggplot(df_long, aes(x = x, y = y, color = factor(labels), text = 1:n)) +
+p1 =  ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
   geom_point(size = 1) +
   labs(color = "Digit")
 
-ggplotly(p1, tooltip = c("x", "y", "text"))
+ggplotly(p1, tooltip = c("x", "y", "label"))
 ```
 
 
 ```{r}
-p2 = plot_path(Z_pca, X, 889, 313, labels = labels)
-ggplotly(p2, tooltip = c("x", "y", "label"))
+ggplotly(add_path(p1, df_long, get_shortest_path(g, 1, 2)),
+         tooltip = c("x", "y", "label"))
 ```
 
 ```{r}
