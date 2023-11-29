@@ -1,4 +1,5 @@
 library(igraph)
+library(cluster)
 
 get_mst = function(X) {
   X_dist = as.matrix(dist(X))
@@ -47,25 +48,6 @@ get_emb_path_weights = function(X, path) {
   weights
 }
 
-plot_path = function(Z, X, from, to, labels = NULL) {
-  vpath = get_shortest_path(get_mst(Z), from, to)$vpath
-  
-  df = data.frame(x = X[,1], y = X[,2], pt_num = 1:length(X[,1]))
-  
-  if (is.null(labels)) {
-    ggplot(df, aes(x = x, y = y, label = pt_num)) +
-      geom_point(size = 1) +
-      geom_path(data = df[as.numeric(vpath),], color = "red")
-  }
-  
-  else {
-    ggplot(df, aes(x = x, y = y, color = factor(labels), label = pt_num)) +
-      geom_point(size = 1) +
-      geom_path(data = df[as.numeric(vpath),], color = "black") + 
-      labs(color = "Digit")
-  }
-}
-
 add_path = function(plot, df, path, path_component = 0) {
   vpath = path$vpath
   
@@ -82,3 +64,36 @@ add_path = function(plot, df, path, path_component = 0) {
     p + geom_path(data = df[as.numeric(vpath),], color = col)
   }
 }
+
+plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
+  p = plot
+  
+  meds = medoids(Z, labels)
+  
+  num_meds = length(meds)
+  
+  for (i in 1:(num_meds-1)) {
+    for (j in (i+1):num_meds) {
+      path = get_shortest_path(Z_mst, meds[i], meds[j])
+      p = p + geom_path(data = df[as.numeric(path$vpath),], color = "black")
+    }
+  }
+  
+  p
+}
+
+# plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
+#   p = plot
+#   
+#   meds = medoids(Z, labels)
+#   med_mst = subgraph(Z_mst, meds)
+#   edge_matrix = as.matrix(med_mst, matrix.type = "edgelist")
+#   
+#   num_meds = length(meds)
+#   
+#   for (i in 1:length(edge_matrix)[,1]) {
+#     p = p + geom_path(data = df[as.numeric(edge_matrix[i,])], color = "black")
+#   }
+#   
+#   p
+# }

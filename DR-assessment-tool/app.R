@@ -23,7 +23,11 @@ ui = fluidPage(
     sidebarPanel(
       numericInput("from", "From id", value = df_long$id[1]),
       numericInput("to", "To id", value = df_long$id[2]),
-      uiOutput("slider")
+      uiOutput("slider"),
+      radioButtons("med_mst",
+                   label = "Show Medoid MST?",
+                   choices = c("Hide", "Show"),
+                   inline = TRUE)
     ),
     
     mainPanel("Plots",
@@ -52,8 +56,13 @@ server = function(input, output) {
   })
   
   output$tsnePlot = renderPlotly({
-    ggplotly(add_path(p, df_long, shortest_path(), input$slider),
-             tooltip = c("x", "y", "label"))
+    if (input$med_mst == "Show") {
+      ggplotly(plot_medoid_mst(p, df_long, Z_pca, Z_mst, df_long$labels))
+    }
+    else {
+      ggplotly(add_path(p, df_long, shortest_path(), input$slider),
+               tooltip = c("x", "y", "label"))
+    }
   })
   
   output$pathWeights = renderPlot({
