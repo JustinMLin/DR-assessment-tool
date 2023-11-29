@@ -19,7 +19,7 @@ source("Algorithms/DR assessment tool algs.R")
 ```
 
 ```{r}
-n = 8000
+n = 3000
 p = 300
 
 data = read_mnist()$train

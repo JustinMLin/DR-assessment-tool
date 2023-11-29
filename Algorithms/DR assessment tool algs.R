@@ -65,35 +65,36 @@ add_path = function(plot, df, path, path_component = 0) {
   }
 }
 
-plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
-  p = plot
-  
-  meds = medoids(Z, labels)
-  
-  num_meds = length(meds)
-  
-  for (i in 1:(num_meds-1)) {
-    for (j in (i+1):num_meds) {
-      path = get_shortest_path(Z_mst, meds[i], meds[j])
-      p = p + geom_path(data = df[as.numeric(path$vpath),], color = "black")
-    }
-  }
-  
-  p
-}
-
 # plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
 #   p = plot
 #   
 #   meds = medoids(Z, labels)
-#   med_mst = subgraph(Z_mst, meds)
-#   edge_matrix = as.matrix(med_mst, matrix.type = "edgelist")
 #   
 #   num_meds = length(meds)
 #   
-#   for (i in 1:length(edge_matrix)[,1]) {
-#     p = p + geom_path(data = df[as.numeric(edge_matrix[i,])], color = "black")
+#   for (i in 1:(num_meds-1)) {
+#     for (j in (i+1):num_meds) {
+#       path = get_shortest_path(Z_mst, meds[i], meds[j])
+#       p = p + geom_path(data = df[as.numeric(path$vpath),], color = "black")
+#     }
 #   }
 #   
 #   p
 # }
+
+plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
+  p = plot
+
+  meds = medoids(Z, labels)
+  med_mst_vertices = unique(unlist(all_simple_paths(Z_mst, from = meds[1], to = meds[-1], mode = "out")))
+  med_mst = induced_subgraph(Z_mst, med_mst_vertices)
+  edge_matrix = as.matrix(med_mst, matrix.type = "edgelist")
+
+  n = length(edge_matrix[,1])
+
+  for (i in 1:n) {
+    p = p + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
+  }
+
+  p
+}
