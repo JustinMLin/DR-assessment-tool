@@ -21,6 +21,7 @@ ui = fluidPage(
   
   sidebarLayout(
     sidebarPanel(
+      numericInput("digit_id", "Digit id", value = df_long$id[1]),
       numericInput("from", "From id", value = df_long$id[1]),
       numericInput("to", "To id", value = df_long$id[2]),
       uiOutput("slider"),
@@ -31,9 +32,10 @@ ui = fluidPage(
     ),
     
     mainPanel("Plots",
-      fluidRow(column(6, plotlyOutput("tsnePlot"))),
-      fluidRow(column(6, plotOutput("pathWeights"))),
-      fluidRow(column(6, plotOutput("pathWeightCompare")))
+      fluidRow(column(8, plotlyOutput("tsnePlot")),
+               column(4, plotOutput("digitImage"))),
+      fluidRow(column(6, plotOutput("pathWeights")),
+               column(6, plotOutput("pathWeightCompare")))
     )
   )
 )
@@ -57,12 +59,17 @@ server = function(input, output) {
   
   output$tsnePlot = renderPlotly({
     if (input$med_mst == "Show") {
-      ggplotly(plot_medoid_mst(p, df_long, Z_pca, Z_mst, df_long$labels))
+      ggplotly(plot_medoid_mst(p, df_long, Z_pca, Z_mst, df_long$labels),
+               tooltip = c("x", "y", "label"))
     }
     else {
       ggplotly(add_path(p, df_long, shortest_path(), input$slider),
                tooltip = c("x", "y", "label"))
     }
+  })
+  
+  output$digitImage = renderPlot({
+    view_image(data, input$digit_id)
   })
   
   output$pathWeights = renderPlot({

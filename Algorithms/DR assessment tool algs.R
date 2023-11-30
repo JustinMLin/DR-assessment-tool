@@ -65,23 +65,6 @@ add_path = function(plot, df, path, path_component = 0) {
   }
 }
 
-# plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
-#   p = plot
-#   
-#   meds = medoids(Z, labels)
-#   
-#   num_meds = length(meds)
-#   
-#   for (i in 1:(num_meds-1)) {
-#     for (j in (i+1):num_meds) {
-#       path = get_shortest_path(Z_mst, meds[i], meds[j])
-#       p = p + geom_path(data = df[as.numeric(path$vpath),], color = "black")
-#     }
-#   }
-#   
-#   p
-# }
-
 plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
   p = plot
 
@@ -97,4 +80,8 @@ plot_medoid_mst = function(plot, df, Z, Z_mst, labels) {
   }
 
   p
+}
+
+view_image = function(data, id) {
+  image(1:28,1:28, matrix(data$images[id,],nrow=28)[,28:1], col=gray(seq(0,1,0.05)), xlab="", ylab="")
 }
