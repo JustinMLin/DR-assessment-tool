@@ -10,7 +10,8 @@ source("../Algorithms/DR assessment tool algs.R")
 
 load("../Data/MNIST data.Rda")
 
-Z_mst = g
+#g = Z_mst
+g = Z_nng
 
 p = ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
    geom_point(size = 1) +
@@ -43,7 +44,7 @@ ui = fluidPage(
 server = function(input, output) {
   
   shortest_path = reactive({
-    get_shortest_path(Z_mst, which(df_long$id == input$from), which(df_long$id == input$to))
+    get_shortest_path(g, which(df_long$id == input$from), which(df_long$id == input$to))
   })
   
   output$slider = renderUI({
@@ -59,7 +60,7 @@ server = function(input, output) {
   
   output$tsnePlot = renderPlotly({
     if (input$med_mst == "Show") {
-      ggplotly(plot_medoid_mst(p, df_long, Z_pca, Z_mst, df_long$labels),
+      ggplotly(plot_medoid_mst(p, df_long, Z_pca, g, df_long$labels),
                tooltip = c("x", "y", "label"))
     }
     else {

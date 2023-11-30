@@ -1,10 +1,24 @@
 library(igraph)
 library(cluster)
+library(cccd)
 
 get_mst = function(X) {
   X_dist = as.matrix(dist(X))
   graph = graph_from_adjacency_matrix(X_dist, mode="undirected", weighted=TRUE)
   mst(graph)
+}
+
+get_nng = function(X, k) {
+  g = nng(X, k=k, mutual=TRUE)
+  for (i in 1:length(E(g)[[]])) {
+    edge = E(g)[[i]]
+    head = as.numeric(head_of(g, edge))
+    tail = as.numeric(tail_of(g, edge))
+    
+    E(g)$weight[i] = norm(X[head,] - X[tail,], type="2")
+  }
+  
+  g
 }
 
 get_shortest_path = function(graph, from, to) {
