@@ -53,6 +53,6 @@ ggplotly(add_path(p1, df_long, get_shortest_path(g, 1, 2)),
 ```
 
 ```{r}
-save(Z_pca, Z_mst, Z_nng, X, df_long, labels, data, file = "Data/MNIST data.Rda")
+save(Z_pca, Z_mst, `Z_nng, X, df_long, labels, data, file = "Data/MNIST data.Rda")
 ```
 

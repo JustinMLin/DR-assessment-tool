@@ -61,11 +61,13 @@ server = function(input, output) {
   output$tsnePlot = renderPlotly({
     if (input$med_mst == "Show") {
       ggplotly(plot_medoid_mst(p, df_long, Z_pca, g, df_long$labels),
-               tooltip = c("x", "y", "label"))
+               tooltip = c("x", "y", "label")) %>%
+        layout(dragmode='pan')
     }
     else {
       ggplotly(add_path(p, df_long, shortest_path(), input$slider),
-               tooltip = c("x", "y", "label"))
+               tooltip = c("x", "y", "label")) %>%
+        layout(dragmode='pan')
     }
   })
   
