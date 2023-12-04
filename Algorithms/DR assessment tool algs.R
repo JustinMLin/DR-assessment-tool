@@ -2,16 +2,8 @@ library(igraph)
 library(cluster)
 library(cccd)
 
-mahalanobis_dist = function(X) {
-  dec = chol(cov(X))
-  tmp = forwardsolve(t(dec), t(X) )
-  dist(t(tmp))
-}
-
-get_mst = function(X, weighted = FALSE) {
-  ifelse(weighted,
-         {X_dist = as.matrix(mahalanobis_dist(X))},
-         {X_dist = as.matrix(dist(X))})
+get_mst = function(X) {
+  X_dist = as.matrix(dist(X))
 
   graph = graph_from_adjacency_matrix(X_dist, mode="undirected", weighted=TRUE)
   mst(graph)
