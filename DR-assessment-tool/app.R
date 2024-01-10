@@ -22,9 +22,9 @@ ui = fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      numericInput("digit_id", "Digit id", value = df_long$id[1]),
       numericInput("from", "From id", value = df_long$id[1]),
       numericInput("to", "To id", value = df_long$id[2]),
+      numericInput("digit_id", "Digit id", value = df_long$id[1]),
       uiOutput("slider"),
       radioButtons("med_mst",
                    label = "Show Medoid MST?",
