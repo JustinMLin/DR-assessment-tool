@@ -9,21 +9,21 @@ get_mst = function(X) {
   mst(graph)
 }
 
-get_cluster_dist = function(g, id1, id2) {
+get_cluster_dist = function(X_dist, g, id1, id2) {
   cluster1 = which(V(g)$cluster == id1) # ids of vertices in cluster 1
   cluster2 = which(V(g)$cluster == id2) # ids of vertices in cluster 2
   
   total_dist = 0
   for (i in 1:length(cluster1)) {
     for (j in 1:length(cluster2)) {
-      total_dist = total_dist + norm(X[cluster1[i],] - X[cluster2[j],], type="2")
+      total_dist = total_dist + as.numeric(X_dist[[c(cluster1[i],cluster2[j])]])
     }
   }
   
   total_dist/(i*j)
 }
 
-get_cluster_dists = function(g) {
+get_cluster_dists = function(X_dist, g) {
   if (!any(vertex_attr_names(g) == "cluster")) {
     error("get_cluster_dist: graph doesn't have assigned clusters")
   }
@@ -36,7 +36,7 @@ get_cluster_dists = function(g) {
   row = 1
   for (i in 1:(num_clusters-1)) {
     for (j in (i+1):num_clusters) {
-      dists[row,] = c(clusters[i], clusters[j], get_cluster_dist(g, clusters[i], clusters[j]))
+      dists[row,] = c(clusters[i], clusters[j], get_cluster_dist(X_dist, g, clusters[i], clusters[j]))
       
       row = row + 1
     }
@@ -59,7 +59,7 @@ get_medoid = function(X_dist, point_ids) {
 }
 
 connect_clusters = function(X_dist, g) {
-  cluster_dists = get_cluster_dists(g)
+  cluster_dists = get_cluster_dists(X_dist, g)
   min_row = which(cluster_dists[,3] == min(cluster_dists[,3]))
   
   id1 = cluster_dists[min_row,1] # cluster id of first cluster

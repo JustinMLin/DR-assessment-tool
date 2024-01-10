@@ -32,6 +32,7 @@ labels = data$labels[subsample]
 Z_pca = prcomp(Z, rank. = p)$x
 Z_mst = get_mst(Z_pca)
 Z_nng = get_nng(Z_pca, k = k)
+Z_sl = get_avg_linkage_graph(Z_pca)
 
 X = Rtsne(Z, dims = 2, perplexity = 30)$Y
 ```
@@ -53,6 +54,6 @@ ggplotly(add_path(p1, df_long, get_shortest_path(g, 1, 2)),
 ```
 
 ```{r}
-save(Z_pca, Z_mst, `Z_nng, X, df_long, labels, data, file = "Data/MNIST data.Rda")
+save(Z_pca, Z_mst, Z_nng, Z_sl, X, df_long, labels, data, file = "Data/MNIST data.Rda")
 ```
 

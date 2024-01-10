@@ -10,8 +10,9 @@ source("../Algorithms/DR assessment tool algs.R")
 
 load("../Data/MNIST data.Rda")
 
-g = Z_mst
+#g = Z_mst
 #g = Z_nng
+g = Z_sl
 
 p = ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
    geom_point(size = 1) +

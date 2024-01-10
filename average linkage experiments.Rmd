@@ -14,9 +14,8 @@ source("Algorithms/DR assessment tool algs.R")
 ```
 
 ```{r}
-n = 100
-p = 50
-X = matrix(runif(n*p, min=-10, max=10), nrow=n, ncol=p)
+X = matrix(c(0,2,0,0,1,0,6,0,6,6), ncol=2, byrow=TRUE)
+plot(X)
 ```
 
 ```{r}
