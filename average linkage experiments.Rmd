@@ -11,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(igraph)
 
 source("Algorithms/DR assessment tool algs.R")
+source("Algorithms/single-linkage graph")
 ```
 
 ```{r}

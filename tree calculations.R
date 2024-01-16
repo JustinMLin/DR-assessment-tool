@@ -2,10 +2,10 @@ library(dslabs)
 library(Rtsne)
 
 source("DR assessment tool algs.R")
+source("single-linkage graph.R")
 
-n = 3000
+n = 1000
 p = 300
-k = 30
 
 data = read_mnist()$train
 subsample = sample(1:60000, n)

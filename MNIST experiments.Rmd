@@ -16,10 +16,11 @@ library(dplyr)
 library(plotly)
 
 source("Algorithms/DR assessment tool algs.R")
+source("Algorithms/single-linkage graph.R")
 ```
 
 ```{r}
-n = 3000
+n = 800
 p = 300
 k = 30
 
@@ -28,10 +29,10 @@ subsample = sample(1:60000, n)
 
 Z = data$images[subsample,]
 labels = data$labels[subsample]
-
 Z_pca = prcomp(Z, rank. = p)$x
+
 Z_mst = get_mst(Z_pca)
-Z_nng = get_nng(Z_pca, k = k)
+# Z_nng = get_nng(Z_pca, k = k)
 Z_sl = get_avg_linkage_graph(Z_pca)
 
 X = Rtsne(Z, dims = 2, perplexity = 30)$Y

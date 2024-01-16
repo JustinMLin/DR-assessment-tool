@@ -9,101 +9,108 @@ get_mst = function(X) {
   mst(graph)
 }
 
-get_cluster_dist = function(X_dist, g, id1, id2) {
-  cluster1 = which(V(g)$cluster == id1) # ids of vertices in cluster 1
-  cluster2 = which(V(g)$cluster == id2) # ids of vertices in cluster 2
-  
-  total_dist = 0
-  for (i in 1:length(cluster1)) {
-    for (j in 1:length(cluster2)) {
-      total_dist = total_dist + as.numeric(X_dist[[c(cluster1[i],cluster2[j])]])
-    }
-  }
-  
-  total_dist/(i*j)
-}
-
-get_cluster_dists = function(X_dist, g) {
-  if (!any(vertex_attr_names(g) == "cluster")) {
-    error("get_cluster_dist: graph doesn't have assigned clusters")
-  }
-  
-  clusters = unique(V(g)$cluster)
-  num_clusters = length(clusters)
-  
-  dists = matrix(nrow = num_clusters*(num_clusters - 1)/2, ncol = 3)
-  
-  row = 1
-  for (i in 1:(num_clusters-1)) {
-    for (j in (i+1):num_clusters) {
-      dists[row,] = c(clusters[i], clusters[j], get_cluster_dist(X_dist, g, clusters[i], clusters[j]))
-      
-      row = row + 1
-    }
-  }
-  
-  dists
-}
-
-get_medoid = function(X_dist, point_ids) {
-  if (length(point_ids) == 1) { # check if X is one point
-    point_ids
-  }
-  else {
-    total_dists = rowSums(as.matrix(X_dist))
-    
-    medoid = which(total_dists == min(total_dists))
-    
-    point_ids[medoid]
-  }
-}
-
-connect_clusters = function(X_dist, g) {
-  cluster_dists = get_cluster_dists(X_dist, g)
-  min_row = which(cluster_dists[,3] == min(cluster_dists[,3]))
-  
-  id1 = cluster_dists[min_row,1] # cluster id of first cluster
-  id2 = cluster_dists[min_row,2] # cluster id of second cluster
-  
-  cluster1_vertex_ids = which(V(g)$cluster == id1) # vertex ids of points in cluster 1
-  cluster2_vertex_ids = which(V(g)$cluster == id2) # vertex ids of points in cluster 2
-  
-  medoid1_ids = get_medoid(X_dist[[cluster1_vertex_ids]], cluster1_vertex_ids) # vertex id(s) of cluster 1 medoid
-  medoid2_ids = get_medoid(X_dist[[cluster2_vertex_ids]], cluster2_vertex_ids) # vertex id(s) of cluster 2 medoid
-  
-  # find medoids with minimal distance (if one of the clusters has multiple)
-  min_dist = Inf
-  for (i in medoid1_ids) {
-    for (j in medoid2_ids) {
-      dist = as.numeric(X_dist[[c(i,j)]])
-      if(dist < min_dist) {
-        medoid1_id = i
-        medoid2_id = j
-        min_dist = dist
-      }
-    }
-  }
-  
-  new_graph = add_edges(g, edges=c(medoid1_id, medoid2_id))
-  V(new_graph)$cluster[cluster2_vertex_ids] = id1
-  
-  new_graph
-}
-
-get_avg_linkage_graph = function(X) {
-  n = length(X[,1])
-  
-  g = make_graph(n=n, edges=NULL, directed=FALSE)
-  
-  g = set_vertex_attr(g, name="cluster", value=1:n)
-  
-  X_dist = dist(X)
-  while(length(unique(V(g)$cluster)) != 1) {
-    g = connect_clusters(X_dist, g)
-  }
-  
-  g
-}
+# get_cluster_dist = function(X_dist, g, id1, id2) {
+#   cluster1 = which(V(g)$cluster == id1) # ids of vertices in cluster 1
+#   cluster2 = which(V(g)$cluster == id2) # ids of vertices in cluster 2
+#   
+#   total_dist = 0
+#   for (i in 1:length(cluster1)) {
+#     for (j in 1:length(cluster2)) {
+#       total_dist = total_dist + as.numeric(X_dist[[c(cluster1[i],cluster2[j])]])
+#     }
+#   }
+#   
+#   total_dist/(i*j)
+# }
+# 
+# get_cluster_dists = function(X_dist, g) {
+#   if (!any(vertex_attr_names(g) == "cluster")) {
+#     error("get_cluster_dist: graph doesn't have assigned clusters")
+#   }
+#   
+#   clusters = unique(V(g)$cluster)
+#   num_clusters = length(clusters)
+#   
+#   dists = matrix(nrow = num_clusters*(num_clusters - 1)/2, ncol = 3)
+#   
+#   row = 1
+#   for (i in 1:(num_clusters-1)) {
+#     for (j in (i+1):num_clusters) {
+#       dists[row,] = c(clusters[i], clusters[j], get_cluster_dist(X_dist, g, clusters[i], clusters[j]))
+#       
+#       row = row + 1
+#     }
+#   }
+#   
+#   dists
+# }
+# 
+# get_medoid = function(X_dist, point_ids) {
+#   if (length(point_ids) == 1) { # check if X is one point
+#     point_ids
+#   }
+#   else {
+#     total_dists = rowSums(as.matrix(X_dist))
+#     
+#     medoid = which(total_dists == min(total_dists))
+#     
+#     point_ids[medoid]
+#   }
+# }
+# 
+# connect_clusters = function(X_dist, g) {
+#   cluster_dists = get_cluster_dists(X_dist, g)
+#   min_row = which(cluster_dists[,3] == min(cluster_dists[,3]))
+#   
+#   id1 = cluster_dists[min_row,1] # cluster id of first cluster
+#   id2 = cluster_dists[min_row,2] # cluster id of second cluster
+#   
+#   cluster1_vertex_ids = which(V(g)$cluster == id1) # vertex ids of points in cluster 1
+#   cluster2_vertex_ids = which(V(g)$cluster == id2) # vertex ids of points in cluster 2
+#   
+#   medoid1_ids = get_medoid(X_dist[[cluster1_vertex_ids]], cluster1_vertex_ids) # vertex id(s) of cluster 1 medoid
+#   medoid2_ids = get_medoid(X_dist[[cluster2_vertex_ids]], cluster2_vertex_ids) # vertex id(s) of cluster 2 medoid
+#   
+#   # find medoids with minimal distance (if one of the clusters has multiple)
+#   min_dist = Inf
+#   for (i in medoid1_ids) {
+#     for (j in medoid2_ids) {
+#       dist = as.numeric(X_dist[[c(i,j)]])
+#       if(dist < min_dist) {
+#         medoid1_id = i
+#         medoid2_id = j
+#         min_dist = dist
+#       }
+#     }
+#   }
+#   
+#   new_graph = add_edges(g, edges=c(medoid1_id, medoid2_id), weight=min_dist)
+#   V(new_graph)$cluster[cluster2_vertex_ids] = id1
+#   
+#   new_graph
+# }
+# 
+# get_avg_linkage_graph = function(X) {
+#   n = length(X[,1])
+#   
+#   g = make_graph(n=n, edges=NULL, directed=FALSE)
+#   
+#   g = set_vertex_attr(g, name="cluster", value=1:n)
+#   
+#   X_dist = dist(X)
+#   num_cluster = length(unique(V(g)$cluster))
+#   
+#   while(num_cluster != 1) {
+#     g = connect_clusters(X_dist, g)
+#     num_cluster = length(unique(V(g)$cluster))
+#     
+#     if (num_cluster %% 10 == 0) {
+#       print(paste0(num_cluster, " clusters remaining"))
+#     }
+#   }
+#   
+#   g
+# }
 
 get_nng = function(X, k) {
   g = nng(X, k=k, mutual=TRUE)
