@@ -16,11 +16,11 @@ library(dplyr)
 library(plotly)
 
 source("Algorithms/DR assessment tool algs.R")
-source("Algorithms/single-linkage graph.R")
+source("Algorithms/avg-linkage graph.R")
 ```
 
 ```{r}
-n = 800
+n = 1500
 p = 300
 k = 30
 
@@ -35,7 +35,7 @@ Z_mst = get_mst(Z_pca)
 # Z_nng = get_nng(Z_pca, k = k)
 Z_sl = get_avg_linkage_graph(Z_pca)
 
-X = Rtsne(Z, dims = 2, perplexity = 30)$Y
+X = Rtsne(Z_pca, dims = 2, perplexity = 30)$Y
 ```
 
 ```{r}
@@ -55,6 +55,6 @@ ggplotly(add_path(p1, df_long, get_shortest_path(g, 1, 2)),
 ```
 
 ```{r}
-save(Z_pca, Z_mst, Z_nng, Z_sl, X, df_long, labels, data, file = "Data/MNIST data.Rda")
+save(Z_pca, Z_mst, Z_sl, X, df_long, labels, data, file = "Data/MNIST data.Rda")
 ```
 

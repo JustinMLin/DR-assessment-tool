@@ -8,10 +8,9 @@ library(plotly)
 
 source("../Algorithms/DR assessment tool algs.R")
 
-load("../Data/MNIST data.Rda")
+load("../Data/avg-linkage data.Rda")
 
-#g = Z_mst
-#g = Z_nng
+# g = Z_mst
 g = Z_sl
 
 p = ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
@@ -27,8 +26,8 @@ ui = fluidPage(
       numericInput("to", "To id", value = df_long$id[2]),
       numericInput("digit_id", "Digit id", value = df_long$id[1]),
       uiOutput("slider"),
-      radioButtons("med_mst",
-                   label = "Show Medoid MST?",
+      radioButtons("med_subtree",
+                   label = "Show medoid subtree?",
                    choices = c("Hide", "Show"),
                    inline = TRUE)
     ),
@@ -60,7 +59,7 @@ server = function(input, output) {
   })
   
   output$tsnePlot = renderPlotly({
-    if (input$med_mst == "Show") {
+    if (input$med_subtree == "Show") {
       ggplotly(plot_medoid_mst(p, df_long, Z_pca, g, df_long$labels),
                tooltip = c("x", "y", "label")) %>%
         layout(dragmode='pan')
@@ -77,21 +76,7 @@ server = function(input, output) {
   })
   
   output$pathWeights = renderPlot({
-    path_weights = get_path_weights(shortest_path())
-    x = seq(from = 0, to = 10, length.out = length(path_weights))
-    
-    df = data.frame(x = x, weight = path_weights)
-    q = ggplot(df, aes(x = x, y = weight)) + 
-          geom_point() +
-          geom_line() +
-          labs(title = "MST Path Weights", y = "Weight") +
-          theme(axis.title.x = element_blank(),
-                axis.text.x = element_blank(),
-                axis.ticks.x = element_blank())
-    
-    if (input$slider != 0) {q = q + geom_point(data = df[input$slider,], color = "red")}
-    
-    print(q)
+    plot_path_weights(shortest_path(), input$slider)
   })
   
   output$pathWeightCompare = renderPlot({
