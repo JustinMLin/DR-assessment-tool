@@ -6,7 +6,7 @@ library(dslabs)
 library(dplyr)
 library(plotly)
 
-source("../Algorithms/DR assessment tool algs.R")
+source("../Algorithms/assessment tool.R")
 
 load("../Data/avg-linkage data.Rda")
 
@@ -18,6 +18,10 @@ g = Z_mst
 p = ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
    geom_point(size = 1) +
    labs(title = "t-SNE embedding of MNIST dataset", color = "Digit")
+
+view_image = function(data, id) {
+  image(1:28,1:28, matrix(data$images[id,],nrow=28)[,28:1], col=gray(seq(0,1,0.05)), xlab="", ylab="")
+}
   
 ui = fluidPage(
   titlePanel("DR Assessment Tool"),
