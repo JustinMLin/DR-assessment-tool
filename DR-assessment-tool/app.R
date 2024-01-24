@@ -10,6 +10,8 @@ source("../Algorithms/DR assessment tool algs.R")
 
 load("../Data/avg-linkage data.Rda")
 
+Z_dist = dist(Z_pca)
+
 g = Z_mst
 # g = Z_sl
 
@@ -26,6 +28,7 @@ ui = fluidPage(
       numericInput("to", "To id", value = df_long$id[2]),
       numericInput("digit_id", "Digit id", value = df_long$id[1]),
       uiOutput("slider"),
+      numericInput("k", "k for kNN-density estimate", min = 1, max = 1000, value = 30),
       radioButtons("med_subtree",
                    label = "Show medoid subtree?",
                    choices = c("Hide", "Show"),
@@ -36,7 +39,8 @@ ui = fluidPage(
       fluidRow(column(8, plotlyOutput("tsnePlot")),
                column(4, plotOutput("digitImage"))),
       fluidRow(column(6, plotOutput("pathWeights")),
-               column(6, plotOutput("pathWeightCompare")))
+               column(6, plotOutput("pathDensities"))),
+      fluidRow(column(6, plotOutput("pathWeightCompare")))
     )
   )
 )
@@ -92,6 +96,10 @@ server = function(input, output) {
     if (input$slider != 0) {q = q + geom_point(data = df[input$slider,], color = "red")}
     
     print(q)
+  })
+  
+  output$pathDensities = renderPlot({
+    plot_path_densities(Z_dist, shortest_path(), input$k)
   })
 }
 

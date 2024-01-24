@@ -1,6 +1,7 @@
 library(igraph)
 library(cluster)
 library(cccd)
+library(dbscan)
 
 tryCatch(
   {source("~/Desktop/Research/DR-assessment-tool/Algorithms/graph algs.R")},
@@ -31,6 +32,35 @@ get_emb_path_weights = function(X, path) {
   }
   
   weights
+}
+
+get_path_density = function(Z_dist, path, k) {
+  vpath = path$vpath
+  
+  if (class(vpath) != "igraph.vs") {
+    error("get_path_weights: input is not of type igraph.es")
+  }
+  
+  vertices = as.numeric(vpath)
+  
+  densities = kNNdist(Z_dist, k)[vertices]
+  
+  densities/k
+}
+
+plot_path_densities = function(Z_dist, path, k) {
+  path_densities = get_path_density(Z_dist, path, k)
+  num_paths = length(path_densities)
+
+  df = data.frame(x = 1:length(path_densities), density = path_densities)
+  q = ggplot(df, aes(x = x, y = density)) + 
+    geom_col(width=1, fill="black") +
+    labs(title = "MST Path Densities", y = "Density") +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+  
+  print(q)
 }
 
 add_path = function(plot, df, path, path_component = 0) {
