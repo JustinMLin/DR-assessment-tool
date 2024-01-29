@@ -8,6 +8,7 @@ source("../Algorithms/assessment tool.R")
 check_inputs(Z, X, tree, labels, id)
 
 Z_dist = dist(Z)
+max_length = max(E(tree)$weight)
 
 plotting_df = data.frame(x=X[,1], y=X[,2], labels, id)
 p = ggplot(plotting_df, aes(x=x, y=y, color=factor(labels), label=id)) +
@@ -22,7 +23,7 @@ ui = fluidPage(
       numericInput("from", "From id", value = id[1]),
       numericInput("to", "To id", value = id[2]),
       uiOutput("slider"),
-      numericInput("k", "k for kNN-density estimate", min = 1, max = dim(Z)/2, value = 1),
+      numericInput("k", "k for kNN-density estimate", min = 1, max = dim(Z)[1]/2, value = 1),
       radioButtons("med_subtree",
                    label = "Show medoid subtree?",
                    choices = c("Hide", "Show"),
@@ -69,7 +70,7 @@ server = function(input, output) {
   })
   
   output$pathWeights = renderPlot({
-    plot_path_weights(shortest_path(), input$slider)
+    plot_path_weights(shortest_path(), input$slider, max_length)
   })
   
   output$pathWeightCompare = renderPlot({

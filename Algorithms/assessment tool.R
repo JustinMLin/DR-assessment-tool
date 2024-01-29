@@ -49,7 +49,7 @@ get_path_weights = function(path) {
   weights
 }
 
-plot_path_weights = function(path, highlight=0) {
+plot_path_weights = function(path, highlight=0, max) {
   path_weights = get_path_weights(path)
   num_paths = length(path_weights)
   
@@ -61,6 +61,7 @@ plot_path_weights = function(path, highlight=0) {
     geom_col(width=1, show.legend=FALSE) +
     labs(title = "MST Path Weights", y = "Weight") +
     scale_fill_manual(values=c("black", "red")) +
+    ylim(0, max) +
     theme(axis.title.x = element_blank(),
           axis.text.x = element_blank(),
           axis.ticks.x = element_blank())
