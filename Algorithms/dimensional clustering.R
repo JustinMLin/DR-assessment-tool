@@ -3,6 +3,8 @@ library(igraph)
 library(stats)
 
 max_silhouette = function(X, max_clusters, cutoff) {
+  X = as.matrix(X)
+  
   n = nrow(X)
   X_dist = dist(X)
   
@@ -41,9 +43,12 @@ get_next_labels = function(X, max_clusters, cutoff, prev_labels) {
 }
 
 dimensional_clustering = function(X, max_clusters, cutoff) {
-  pca = prcomp(X, center=TRUE, scale.=TRUE)$x
-  n = nrow(pca)
-  p = ncol(pca)
+  n = nrow(X)
+  p = ncol(X)
+  
+  if (length(cutoff) != p) stop(paste0("dimensional_clustering: cutoff must be vector of length ", p, "!"))
+  
+  pca = prcomp(X, center=TRUE)$x
   
   dim = 1
   labels = rep(1, n)
@@ -52,7 +57,7 @@ dimensional_clustering = function(X, max_clusters, cutoff) {
   mat[1,] = rep(1,n)
   
   while (dim <= p) {
-    labels = get_next_labels(X=as.matrix(pca[,1:dim]), max_clusters=max_clusters, cutoff=cutoff, prev_labels=labels)
+    labels = get_next_labels(X=as.matrix(pca[,1:dim]), max_clusters=max_clusters, cutoff=cutoff[dim], prev_labels=labels)
     mat[dim+1,] = labels
     
     dim = dim + 1
@@ -83,8 +88,8 @@ build_graph = function(mat) {
   g
 }
 
-plot_graph = function(X, max_clusters, cutoff) {
-  g = build_graph(dimensional_clustering(X, max_clusters, cutoff))
+plot_graph = function(mat) {
+  g = build_graph(mat)
   
   plot(g, layout = layout_as_tree(g, root = "1", mode = "all"))
 }
