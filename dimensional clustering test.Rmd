@@ -1,6 +1,6 @@
 ---
 title: "dimensional clustering test"
-author: "Justin Lin for ISCC"
+author: "Justin Lin"
 date: "`r Sys.Date()`"
 output: html_document
 ---
@@ -26,14 +26,12 @@ Z = rbind(mvrnorm(n=50, mu=c(0,0,0,0,0,0,0,0,0,0), Sigma=diag(rep(1,10))),
 real_labels = c(rep(1,50), rep(2, 60), rep(3, 80), rep(4, 70), rep(5, 60))
 
 pca = prcomp(Z, center=TRUE)
-summary(pca)$importance
-
 
 tsne = Rtsne(Z, theta=0, perplexity = 30)
 ```
 
-```{r, fig.width=10, fig.height=10}
-labels = dimensional_clustering(X=Z, max_clusters=7, cutoff=c(0.6, 0.5, 0.4, rep(0.3, 7)))
+```{r, fig.height=10}
+labels = dimensional_clustering(X=Z, cutoff=c(0.6, 0.5, 0.4, rep(0.3, 7)), scale=FALSE)
 
 vertex_labels = labels
   for (i in 2:nrow(labels)) {
@@ -59,18 +57,25 @@ ggplot(data=df, aes(x=tsne_x, y=tsne_y, color=factor(labels))) + geom_point()
 ```
 
 ```{r}
-scores = matrix(nrow=9, ncol=6)
+scores_list = list()
 for (i in 2:10) {
   X = pca$x[,1:i]
-  scores[(i-1),] = sapply(2:7,
-                  function(k) {
-                    labels = kmeans(X, centers=k, nstart=50)$cluster
-                    si = silhouette(x=labels, dist=dist(X))
-                    summary(si)$avg.width
-                  })
+  scores = vector()
+  k = 2
+  while (TRUE) {
+    labels = kmeans(X, centers=k, nstart=50)$cluster
+    si = silhouette(x=labels, dist=dist(X))
+    scores = c(scores, summary(si)$avg.width)
+    k = k + 1
+    
+    if (length(scores) >= 3 && scores[length(scores)] < scores[length(scores)-1] && scores[length(scores)-1] < scores[length(scores)-2]) {
+      break
+    }
+  }
+  scores_list = c(scores_list, list(scores))
 }
 
-scores
+scores_list
 ```
 
 ```{r}

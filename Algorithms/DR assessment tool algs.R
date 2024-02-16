@@ -10,8 +10,8 @@ tryCatch(
   }
 )
 
-get_mst = function(Z_dist) {
-  Z_dist = as.matrix(Z_dist)
+get_mst = function(Z) {
+  Z_dist = as.matrix(dist(Z))
 
   graph = graph_from_adjacency_matrix(Z_dist, mode="undirected", weighted=TRUE)
   mst(graph)

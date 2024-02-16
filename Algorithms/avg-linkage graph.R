@@ -1,8 +1,8 @@
 library(igraph)
 library(dplyr)
 
-get_avg_linkage_graph = function(X_dist) {
-  X_dist = as.dist(X_dist)
+get_avg_linkage_graph = function(X) {
+  X_dist = dist(X)
   
   n = attr(X_dist, "Size")
   

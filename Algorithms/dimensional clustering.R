@@ -2,7 +2,7 @@ library(cluster)
 library(igraph)
 library(stats)
 
-max_silhouette = function(X, max_clusters, cutoff) {
+max_silhouette = function(X, cutoff) {
   X = as.matrix(X)
   
   n = nrow(X)
@@ -10,57 +10,70 @@ max_silhouette = function(X, max_clusters, cutoff) {
   
   if (n <= 2) return(1)
   
-  scores = sapply(2:min(max_clusters, n-1),
-                  function(k) {
-                    labels = kmeans(X, centers=k, nstart=50)$cluster
-                    si = silhouette(x=labels, dist=X_dist)
-                    summary(si)$avg.width
-                  })
+  scores = vector()
+  k = 2
+  while (TRUE) {
+    labels = kmeans(X, centers=k, iter.max=100, nstart=50)$cluster
+    si = silhouette(x=labels, dist=X_dist)
+    scores = c(scores, summary(si)$avg.width)
+    k = k + 1
+    
+    if (k == n || length(scores) >= 3 && scores[length(scores)] < scores[length(scores)-1] && scores[length(scores)-1] < scores[length(scores)-2]) {
+      break
+    }
+  }
   max_score = max(scores)
   
   if (max_score > cutoff) which(scores == max_score) + 1 else 1
 }
 
-split_cluster = function(X, max_clusters, cutoff) {
-  k = max_silhouette(X, max_clusters, cutoff)
+split_cluster = function(X, cutoff) {
+  k = max_silhouette(X, cutoff)
   
   if (k == 1) rep(1, length(X[,1])) else kmeans(X, centers=k, nstart=50)$cluster
 }
 
 
-get_next_labels = function(X, max_clusters, cutoff, prev_labels) {
+get_next_labels = function(X, cutoff, prev_labels) {
   labels = vector(length=nrow(X))
   max_label = 0
   
   for (i in unique(prev_labels)) {
     labels[prev_labels == i] = split_cluster(matrix(X[which(prev_labels == i),], ncol = ncol(X)),
-                                        max_clusters,
-                                        cutoff) + max_label
+                                             cutoff) + max_label
     max_label = max(labels)
   }
   
   labels
 }
 
-dimensional_clustering = function(X, max_clusters, cutoff) {
+dimensional_clustering = function(X, cutoff, scale) {
   n = nrow(X)
   p = ncol(X)
   
   if (length(cutoff) != p) stop(paste0("dimensional_clustering: cutoff must be vector of length ", p, "!"))
   
-  pca = prcomp(X, center=TRUE)$x
+  pca = prcomp(X, center=TRUE, scale.=scale)$x
   
   dim = 1
   labels = rep(1, n)
   
-  mat = matrix(nrow=p+1, ncol=n)
-  mat[1,] = rep(1,n)
+  mat = matrix(rep(1,n), nrow=1)
   
-  while (dim <= p) {
-    labels = get_next_labels(X=as.matrix(pca[,1:dim]), max_clusters=max_clusters, cutoff=cutoff[dim], prev_labels=labels)
-    mat[dim+1,] = labels
+  while (TRUE) {
+    labels = get_next_labels(X=as.matrix(pca[,1:dim]), cutoff=cutoff[dim], prev_labels=labels)
+    mat = rbind(mat, matrix(labels, nrow=1))
     
+    print(paste0(dim, " dimensions done!"))
     dim = dim + 1
+    
+    if (nrow(mat) >= 5 && length(unique(c(max(mat[dim, ncol(mat)]), 
+                                          max(mat[dim-1, ncol(mat)]), 
+                                          max(mat[dim-2, ncol(mat)]),
+                                          max(mat[dim-3, ncol(mat)]),
+                                          max(mat[dim-4, ncol(mat)])))) == 1) {
+      break
+    }
   }
   
   mat
