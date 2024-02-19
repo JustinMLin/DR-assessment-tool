@@ -1,0 +1,29 @@
+---
+title: "scaled silhouette test"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+library(MASS)
+library(stats)
+library(dslabs)
+
+source("scaled silhouette.R")
+```
+
+```{r}
+test = matrix(c(1,2,0,-1,-2,0,3,4), ncol=2)
+labels = c(1,1,2,2)
+S_list = get_Si(labels, test)
+```
+
+```{r}
+get_lambda(labels, test, 1, 2, S_list)
+```
+
