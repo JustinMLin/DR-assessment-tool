@@ -1,0 +1,32 @@
+---
+title: "MNIST scaled silhouette"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dslabs)
+
+source("scaled silhouette.R")
+```
+
+```{r}
+n = 500
+p = 200
+
+data = read_mnist()$train
+subsample = sample(1:60000, n)
+
+Z = data$images[subsample,]
+labels = data$labels[subsample] + 1
+Z_pca = prcomp(Z, rank. = p)$x
+```
+
+
+```{r}
+sil_scores = scaled_silhouette(labels=labels, X=Z_pca, distance="ridge")
+sil = silhouette(labels, dist(Z_pca))
+```

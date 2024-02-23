@@ -1,7 +1,21 @@
 library(expm)
 
 scaled_silhouette = function(labels, X, distance) {
+  if (!any(distance == c("T2", "ridge"))) stop("distance must be 'T2' or 'ridge'")
+  
   S_list = get_Si(labels, X)
+  
+  if (distance == "ridge") {
+    lambdas = matrix(nrow=length(unique(labels)), ncol=length(unique(labels)))
+    for (i in 1:(length(unique(labels)))) {
+      for (j in i:length(unique(labels))) {
+        lambdas[i,j] = lambdas[j,i] = get_lambda(labels, X, i, j, S_list)
+      }
+    }
+    
+    print("Lambdas computed!")
+  }
+  
   n = nrow(X)
   scores = vector(length=n)
   
@@ -15,19 +29,24 @@ scaled_silhouette = function(labels, X, distance) {
     }
     else {
       cluster_dists = sapply(1:length(unique(labels)),
-                             function(cluster_id) {avg_dist_to_cluster(X[pt,], 
-                                                                       X[which(labels == cluster_id),],
-                                                                       distance,
-                                                                       S_list[[cur_cluster]], 
-                                                                       S_list[[cluster_id]],
-                                                                       n1,
-                                                                       sum(labels == cluster_id))})
+                             function(cluster_id) {
+                               lambda = ifelse(distance == "ridge", lambdas[cur_cluster, cluster_id], NULL)
+                               avg_dist_to_cluster(X[pt,],
+                                                   X[which(labels == cluster_id),],
+                                                   distance,
+                                                   S_list[[cur_cluster]], 
+                                                   S_list[[cluster_id]],
+                                                   n1,
+                                                   sum(labels == cluster_id),
+                                                   lambda)})
       
       a = cluster_dists[cur_cluster] * n1/(n1-1)
       b = min(cluster_dists[-cur_cluster])
       
       scores[pt] = (b-a)/max(a,b)
     }
+    
+    if (pt %% 10 == 0) print(paste(pt, "points completed!"))
   }
   
   scores
@@ -61,12 +80,20 @@ T2_ridge_dist = function(x, y, S1, S2, n1, n2, lambda) {
   sqrt(n1*n2/(n1+n2) * as.numeric(t(x-y) %*% solve(S_pooled + diag(rep(lambda, p))) %*% (x-y)))
 }
 
-avg_dist_to_cluster = function(pt, cluster_pts, distance, S1, S2, n1, n2) {
+avg_dist_to_cluster = function(pt, cluster_pts, distance, S1, S2, n1, n2, lambda) {
   n = nrow(cluster_pts)
   
   total_dist = 0
-  for (i in 1:nrow(cluster_pts)) {
-    total_dist = total_dist + distance(pt, cluster_pts[i,], S1, S2, n1, n2)
+  
+  if (distance == "T2") {
+    for (i in 1:nrow(cluster_pts)) {
+      total_dist = total_dist + T2_dist(pt, cluster_pts[i,], S1, S2, n1, n2)
+    }
+  }
+  else if (distance == "ridge") {
+    for (i in 1:nrow(cluster_pts)) {
+      total_dist = total_dist + T2_ridge_dist(pt, cluster_pts[i,], S1, S2, n1, n2, lambda)
+    }
   }
   
   total_dist/n
@@ -81,22 +108,22 @@ m = function(n, p, lambda, S_pooled) {
 Theta1 = function(n, p, lambda, S_pooled) {
   gamma = p/n
   
-  (1 - lambda * m(n, p, lambda, S_pooled)) / (1 - gamma * (1 - lambda * m(n, p, lambda, S_pooled)))
+  (1 - lambda * m(n, p, -lambda, S_pooled)) / (1 - gamma * (1 - lambda * m(n, p, -lambda, S_pooled)))
 }
 
 Theta2 = function(n, p, lambda, S_pooled) {
   gamma = p/n
   
-  (1 - lambda * m(n, p, lambda, S_pooled)) / 
-    (1 - gamma * (1 - lambda * m(n, p, lambda, S_pooled)))^3 - 
-    lambda * (m(n, p, lambda, S_pooled) - lambda/p + sum(diag(solve(S_pooled - rep(lambda, p)) %^% 2))) / 
-    (1 - gamma * (1 - lambda * m(n, p, lambda, S_pooled)))^4
+  (1 - lambda * m(n, p, -lambda, S_pooled)) / 
+    (1 - gamma * (1 - lambda * m(n, p, -lambda, S_pooled)))^3 - 
+    lambda * (m(n, p, -lambda, S_pooled) - lambda/p * sum(diag(solve(S_pooled + diag(rep(lambda, p))) %^% 2))) / 
+    (1 - gamma * (1 - lambda * m(n, p, -lambda, S_pooled)))^4
 }
 
 Q0 = function(n, p, lambda, S_pooled) {
   gamma = p/n
   
-  m(n, p, lambda, S_pooled) / sqrt(gamma * Theta2(n, p, lambda, S_pooled))
+  m(n, p, -lambda, S_pooled) / sqrt(gamma * Theta2(n, p, lambda, S_pooled))
 }
 
 Q1 = function(n, p, lambda, S_pooled) {
@@ -121,7 +148,7 @@ get_max_lambda = function(n, p, S_pooled) {
   20 * norm(S_pooled, type="F")
 }
 
-Tnp = function(n1, n2, p, lambda, mean1, mean2, S1, S2) {
+Tnp = function(n1, n2, p, lambda, mean1, mean2, S1, S2, S_pooled) {
   n = n1 + n2
   
   sqrt(p) *
@@ -165,13 +192,13 @@ get_lambda = function(labels, X, label1, label2, S_list) {
   mean1 = colMeans(X[which(labels == label1),])
   mean2 = colMeans(X[which(labels == label2),])
   
-  Tnps = c(Tnp(n1, n2, p, lambda0, mean1, mean2, S1, S2), 
-           Tnp(n1, n2, p, lambda2, mean1, mean2, S1, S2), 
-           Tnp(n1, n2, p, lambda3, mean1, mean2, S1, S2))
+  Tnps = c(Tnp(n1, n2, p, lambda0, mean1, mean2, S1, S2, S_pooled), 
+           Tnp(n1, n2, p, lambda1, mean1, mean2, S1, S2, S_pooled), 
+           Tnp(n1, n2, p, lambda2, mean1, mean2, S1, S2, S_pooled))
   
-  max_Tnp = which(Tnps = max(Tnps))
+  max_Tnp = which(Tnps == max(Tnps))[1]
   
-  if (max_Tnp == 0) return(lambda0)
-  else if (max_Tnp == 1) return(lambda1)
-  else if (max_Tnp == 2) return(lambda2)
+  if (max_Tnp == 1) return(lambda0)
+  else if (max_Tnp == 2) return(lambda1)
+  else if (max_Tnp == 3) return(lambda2)
 }

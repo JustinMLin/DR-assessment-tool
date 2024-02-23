@@ -24,6 +24,10 @@ S_list = get_Si(labels, test)
 ```
 
 ```{r}
-get_lambda(labels, test, 1, 2, S_list)
+lambda = get_lambda(labels, test, 1, 2, S_list)
+```
+
+```{r}
+scaled_silhouette(labels=labels, X=test, distance="ridge")
 ```
 
