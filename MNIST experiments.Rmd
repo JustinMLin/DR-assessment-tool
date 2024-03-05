@@ -16,7 +16,6 @@ library(dplyr)
 library(plotly)
 
 source("Algorithms/DR assessment tool algs.R")
-source("Algorithms/avg-linkage graph.R")
 ```
 
 ```{r}
@@ -30,10 +29,9 @@ subsample = sample(1:60000, n)
 Z = data$images[subsample,]
 labels = data$labels[subsample]
 Z_pca = prcomp(Z, rank. = p)$x
+Z_dist = dist(Z_pca, method="manhattan")
 
-Z_mst = get_mst(Z_pca)
-# Z_nng = get_nng(Z_pca, k = k)
-Z_sl = get_avg_linkage_graph(Z_pca)
+Z_mst = get_mst(Z_dist)
 
 X = Rtsne(Z_pca, dims = 2, perplexity = 30)$Y
 ```
@@ -48,13 +46,7 @@ p1 =  ggplot(df_long, aes(x = x, y = y, color = factor(labels), label = id)) +
 ggplotly(p1, tooltip = c("x", "y", "label"))
 ```
 
-
 ```{r}
-ggplotly(add_path(p1, df_long, get_shortest_path(g, 1, 2)),
-         tooltip = c("x", "y", "label"))
-```
-
-```{r}
-save(Z_pca, Z_mst, Z_sl, X, df_long, labels, data, file = "Data/MNIST data.Rda")
+save(Z_pca, Z_dist, Z_mst, X, df_long, labels, subsample, file = "Data/MNIST data manhattan.Rda")
 ```
 

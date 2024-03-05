@@ -10,6 +10,7 @@ Z = rbind(mvrnorm(n=40, mu=runif(n=5, min=-10, max=10), Sigma=diag(abs(rnorm(n=5
           mvrnorm(n=35, mu=runif(n=5, min=-10, max=10), Sigma=diag(abs(rnorm(n=5, mean=0, sd=15)))),
           mvrnorm(n=30, mu=runif(n=5, min=-10, max=10), Sigma=diag(abs(rnorm(n=5, mean=0, sd=15)))),
           mvrnorm(n=65, mu=runif(n=5, min=-10, max=10), Sigma=diag(abs(rnorm(n=5, mean=0, sd=15)))))
+Z_dist = dist(Z)
 
 X = Rtsne(Z, perplexit=10)$Y # perplexity too low
 X1 = prcomp(Z, center=TRUE, scale.=TRUE, rank.=2)$x

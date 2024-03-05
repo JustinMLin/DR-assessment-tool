@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(dbscan)
 library(cluster)
+library(usedist)
 
 ####### Graph Algorithms #######
 
@@ -36,7 +37,7 @@ get_path_weights = function(path) {
   epath = path$epath
   
   if (class(epath) != "igraph.es") {
-    error("get_path_weights: input is not of type igraph.es")
+    stop("get_path_weights: input is not of type igraph.es")
   }
   
   num_paths = length(epath[])
@@ -221,7 +222,6 @@ get_medoid = function(X_dist, g, cluster_id) {
 }
 
 
-
 ###### App Tools #######
 
 
@@ -229,7 +229,7 @@ get_emb_path_weights = function(X, path) {
   vpath = path$vpath
   
   if (class(vpath) != "igraph.vs") {
-    error("get_path_weights: input is not of type igraph.es")
+    stop("get_path_weights: input is not of type igraph.es")
   }
   
   num_paths = length(vpath) - 1
@@ -246,7 +246,7 @@ get_path_density = function(Z_dist, path, k) {
   vpath = path$vpath
   
   if (class(vpath) != "igraph.vs") {
-    error("get_path_weights: input is not of type igraph.es")
+    stop("get_path_weights: input is not of type igraph.es")
   }
   
   vertices = as.numeric(vpath)
@@ -288,10 +288,18 @@ add_path = function(plot, df, path, path_component = 0) {
   }
 }
 
-plot_medoid_mst = function(plot, df, Z, tree) {
+plot_medoid_mst = function(plot, df, Z_dist, tree) {
   p = plot
   
-  meds = medoids(Z, df$labels)
+  meds = c()
+  
+  for (i in unique(df$labels)) {
+    cluster_dists = dist_subset(Z_dist, which(df$labels == i))
+    pt_dists = rowSums(as.matrix(cluster_dists))
+    
+    meds = c(meds, as.numeric(names(which(pt_dists == min(pt_dists)))[1]))
+  }
+  
   med_tree = get_subtree(tree, meds)
   
   edge_matrix = as.matrix(med_tree, matrix.type = "edgelist")
@@ -307,15 +315,51 @@ plot_medoid_mst = function(plot, df, Z, tree) {
 
 check_inputs = function(Z, X, tree, labels=NULL, id) {
   if (dim(Z)[1] != dim(X)[1]) {
-    error("check_inputs: Z and X must have the same number of rows")
+    stop("check_inputs: Z and X must have the same number of rows")
   }
   if (!is_tree(tree)) {
-    error("check_inputs: graph is not a tree")
+    stop("check_inputs: graph is not a tree")
   }
   if (!is.null(labels) & length(labels) != dim(Z)[1]) {
-    error("check_inputs: labels vector must have length equal to number of points")
+    stop("check_inputs: labels vector must have length equal to number of points")
   }
   if (length(id) != dim(Z)[1]) {
-    error("check_inputs: id vector must have length equal to number of points")
+    stop("check_inputs: id vector must have length equal to number of points")
   }
+}
+
+###### Path Densities #######
+
+path_loc = function(Z, path, t) {
+  if (t < 0 || t > sum(path$epath$weight)) {
+    stop("path_loc: t must be between 0 and length of path")
+  }
+  
+  path_weights = path$epath$weight
+  
+  k = min(which(cumsum(path_weights) >= t))
+  
+  s = (t - ifelse(k == 1, 0, cumsum(path_weights)[k-1])) / path_weights[k]
+  
+  (1-s)*Z[path$vpath[k],] + s*Z[path$vpath[k+1],]
+}
+
+plot_path_density_cont = function(Z, path, k) {
+  p = ncol(Z)
+  
+  ts = seq(from=0, to=sum(path$epath$weight), length.out=200)
+  
+  loc = matrix(nrow=200, ncol=p)
+  for (i in 1:200) {
+    loc[i,] = path_loc(Z, path, ts[i])
+  }
+  
+  densities = kNN(x=Z, k=k, query=loc)$dist[,k]/k
+  
+  df = data.frame(t=ts, d=densities)
+  q = ggplot(df, aes(x=t, y=d)) + 
+    geom_point() + 
+    geom_line()
+  
+  print(q)
 }

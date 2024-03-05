@@ -3,18 +3,25 @@ library(ggplot2)
 library(dplyr)
 library(plotly)
 
+load("../Data/MNIST data.Rda")
+#load("../Data/MNIST data manhattan.Rda")
+
+
 source("../Algorithms/assessment tool.R")
+
+Z = Z_pca
+tree = Z_mst
+id = subsample
 
 check_inputs(Z, X, tree, labels, id)
 
-Z_dist = dist(Z)
 max_length = max(E(tree)$weight)
 
 plotting_df = data.frame(x=X[,1], y=X[,2], labels, id)
 p = ggplot(plotting_df, aes(x=x, y=y, color=factor(labels), label=id)) +
       geom_point(size=1) +
       labs(title="t-SNE Embedding", color="Class")
-  
+
 ui = fluidPage(
   titlePanel("DR Assessment Tool"),
   
@@ -58,7 +65,7 @@ server = function(input, output) {
   
   output$tsnePlot = renderPlotly({
     if (input$med_subtree == "Show") {
-      ggplotly(plot_medoid_mst(p, plotting_df, Z, tree),
+      ggplotly(plot_medoid_mst(p, plotting_df, Z_dist, tree),
                tooltip = c("x", "y", "label")) %>%
         layout(dragmode='pan')
     }
@@ -79,7 +86,7 @@ server = function(input, output) {
     
     df = data.frame(path_weights, path_emb_weights)
     
-    q = ggplot(df, aes(x = path_weights, y = path_emb_weights)) + 
+    q = ggplot(df, aes(x = path_weights, y = path_emb_weights)) +
       geom_point() + 
       labs(title = "Path Weight Comparison", x = "High-Dimensional Space", y = "Visualization Space")
     
@@ -89,7 +96,8 @@ server = function(input, output) {
   })
   
   output$pathDensities = renderPlot({
-    plot_path_densities(Z_dist, shortest_path(), input$k)
+    #plot_path_densities(Z_dist, shortest_path(), input$k)
+    plot_path_density_cont(Z, shortest_path(), input$k)
   })
 }
 
