@@ -359,7 +359,8 @@ plot_path_density_cont = function(Z, path, k) {
   df = data.frame(t=ts, d=densities)
   q = ggplot(df, aes(x=t, y=d)) + 
     geom_point() + 
-    geom_line()
+    geom_line() +
+    labs(title="Intermittent Path Densities", x="", y="Density")
   
   print(q)
 }
