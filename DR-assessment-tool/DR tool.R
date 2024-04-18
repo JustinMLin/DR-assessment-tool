@@ -6,12 +6,11 @@ library(plotly)
 load("../Data/MNIST data.Rda")
 #load("../Data/MNIST data manhattan.Rda")
 
-
-source("../Algorithms/assessment tool.R")
-
 Z = Z_pca
 tree = Z_mst
 id = subsample
+
+source("../Algorithms/assessment tool.R")
 
 check_inputs(Z, X, tree, labels, id)
 
@@ -97,7 +96,8 @@ server = function(input, output) {
   
   output$pathDensities = renderPlot({
     #plot_path_densities(Z_dist, shortest_path(), input$k)
-    plot_path_density_cont(Z, shortest_path(), input$k)
+    #plot_path_density_cont(Z, shortest_path(), input$k)
+    plot_projected_weights(Z, shortest_path(), max_length, input$slider)
   })
 }
 

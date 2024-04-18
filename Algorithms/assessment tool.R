@@ -313,6 +313,37 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
   p
 }
 
+plot_projected_weights = function(Z, path, max_length, highlight=0) {
+  path_ids = as.numeric(path$vpath)
+  pts = Z[path_ids,]
+  first = pts[1,]
+  last = pts[nrow(pts),]
+  
+  projected_pts = matrix(nrow=nrow(pts), ncol=ncol(Z))
+  for (i in 1:nrow(pts)) {
+    projected_pts[i,] = sum((last-first) * (pts[i,]-first))/norm(last-first, type="2")^2 * (last-first) + first
+  }
+  
+  weights = sapply(2:nrow(projected_pts), function(i) {
+    norm(projected_pts[i,] - projected_pts[i-1,], type="2")
+  })
+  
+  fill = rep(0, length(weights))
+  fill[highlight] = 1
+  
+  p = data.frame(x=1:length(weights), weight=weights, fill=factor(fill)) %>%
+    ggplot(aes(x=x, y=weight, fill=fill)) + 
+    geom_col(width=1, show.legend=FALSE) +
+    scale_fill_manual(values=c("black", "red")) +
+    ylim(0, max_length) +
+    labs(title = "Projected Path Weights", y = "Weight") +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+  
+  print(p)
+}
+
 check_inputs = function(Z, X, tree, labels=NULL, id) {
   if (dim(Z)[1] != dim(X)[1]) {
     stop("check_inputs: Z and X must have the same number of rows")
