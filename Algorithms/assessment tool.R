@@ -4,6 +4,7 @@ library(dplyr)
 library(dbscan)
 library(cluster)
 library(usedist)
+library(scales)
 
 ####### Graph Algorithms #######
 
@@ -340,6 +341,60 @@ plot_projected_weights = function(Z, path, max_length, highlight=0) {
     theme(axis.title.x = element_blank(),
           axis.text.x = element_blank(),
           axis.ticks.x = element_blank())
+  
+  print(p)
+}
+
+plot_projected_points = function(Z, path, labels) {
+  path_ids = as.numeric(path$vpath)
+  
+  first_id = path_ids[1]
+  first_label = labels[first_id]
+  first = Z[first_id,]
+  
+  last_id = path_ids[length(path_ids)]
+  last_label = labels[last_id]
+  last = Z[last_id,]
+  
+  ids = unique(c(path_ids, which(labels == first_label), which(labels == last_label)))
+  pts = Z[ids,]
+  cols = labels[ids]
+  
+  projected_pts = vector(length=nrow(pts))
+  for (i in 1:nrow(pts)) {
+    projected_pts[i] = sum((last-first) * (pts[i,]-first))/norm(last-first, type="2")^2
+  }
+  
+  p = data.frame(x=projected_pts) %>%
+    ggplot(aes(x=x)) +
+    geom_point(aes(x=x, y=0, color=factor(cols))) +
+    geom_density() +
+    scale_color_manual(values=hue_pal()(length(unique(labels)))[sort(unique(cols))]) +
+    labs(title="Projected Path Density", x="", y="Density", color="Class")
+  
+  print(p)
+}
+
+plot_2d_projection = function(Z, path, labels) {
+  path_ids = as.numeric(path$vpath)
+  path_pts = Z[path_ids,]
+  pca = prcomp(path_pts, rank.=2)
+  
+  first_label = labels[path_ids[1]]
+  last_label = labels[path_ids[length(path_ids)]]
+  
+  ids = unique(c(path_ids, which(labels == first_label), which(labels == last_label)))
+  pts = Z[ids,]
+  cols = labels[ids]
+  
+  projected_pts = predict(pca, newdata=pts)
+  
+  df = data.frame(x=projected_pts[,1], y=projected_pts[,2])
+  p = ggplot(data=df, aes(x=x, y=y)) +
+    geom_point(aes(x=x, y=y, color=factor(cols))) +
+    scale_color_manual(values=hue_pal()(length(unique(labels)))[sort(unique(cols))]) +
+    labs(title="Projected Path Density", x="", y="", color="Class") +
+    geom_path(data=df[1:length(path_ids),])
   
   print(p)
 }

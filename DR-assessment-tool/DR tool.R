@@ -39,8 +39,7 @@ ui = fluidPage(
     mainPanel("Plots",
       fluidRow(column(8, plotlyOutput("tsnePlot"))),
       fluidRow(column(6, plotOutput("pathWeights")),
-               column(6, plotOutput("pathDensities"))),
-      fluidRow(column(6, plotOutput("pathWeightCompare")))
+               column(6, plotOutput("pathDensities")))
     )
   )
 )
@@ -79,25 +78,10 @@ server = function(input, output) {
     plot_path_weights(shortest_path(), input$slider, max_length)
   })
   
-  output$pathWeightCompare = renderPlot({
-    path_weights = get_path_weights(shortest_path())
-    path_emb_weights = get_emb_path_weights(X, shortest_path())
-    
-    df = data.frame(path_weights, path_emb_weights)
-    
-    q = ggplot(df, aes(x = path_weights, y = path_emb_weights)) +
-      geom_point() + 
-      labs(title = "Path Weight Comparison", x = "High-Dimensional Space", y = "Visualization Space")
-    
-    if (input$slider != 0) {q = q + geom_point(data = df[input$slider,], color = "red")}
-    
-    print(q)
-  })
-  
   output$pathDensities = renderPlot({
     #plot_path_densities(Z_dist, shortest_path(), input$k)
     #plot_path_density_cont(Z, shortest_path(), input$k)
-    plot_projected_weights(Z, shortest_path(), max_length, input$slider)
+    plot_2d_projection(Z, shortest_path(), labels)
   })
 }
 

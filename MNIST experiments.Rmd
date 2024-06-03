@@ -15,7 +15,7 @@ library(dslabs)
 library(dplyr)
 library(plotly)
 
-source("Algorithms/DR assessment tool algs.R")
+source("Algorithms/assessment tool.R")
 ```
 
 ```{r}
@@ -27,10 +27,9 @@ data = read_mnist()$train
 subsample = sample(1:60000, n)
 
 Z = data$images[subsample,]
-labels = data$labels[subsample]
+labels = data$labels[subsample] + 1
 Z_pca = prcomp(Z, rank. = p)$x
-Z_dist = dist(Z_pca, method="manhattan")
-
+Z_dist = dist(Z_pca, method="euclidean")
 Z_mst = get_mst(Z_dist)
 
 X = Rtsne(Z_pca, dims = 2, perplexity = 30)$Y
@@ -47,6 +46,6 @@ ggplotly(p1, tooltip = c("x", "y", "label"))
 ```
 
 ```{r}
-save(Z_pca, Z_dist, Z_mst, X, df_long, labels, subsample, file = "Data/MNIST data manhattan.Rda")
+#save(Z_pca, Z_dist, Z_mst, X, df_long, labels, subsample, file = "Data/MNIST data.Rda")
 ```
 
