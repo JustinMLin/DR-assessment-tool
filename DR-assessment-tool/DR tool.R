@@ -3,8 +3,8 @@ library(ggplot2)
 library(dplyr)
 library(plotly)
 
-load("../Data/MNIST data.Rda")
-#load("../Data/MNIST data manhattan.Rda")
+#load("../Data/MNIST data.Rda")
+load("../Data/MNIST data manhattan.Rda")
 
 Z = Z_pca
 tree = Z_mst

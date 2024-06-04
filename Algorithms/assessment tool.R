@@ -279,13 +279,13 @@ add_path = function(plot, df, path, path_component = 0) {
                "red", "black")
   
   if (path_component != 0) {
-    p + geom_path(data = df[as.numeric(vpath)[1:path_component],], color = col) +
+    plot + geom_path(data = df[as.numeric(vpath)[1:path_component],], color = col) +
       geom_path(data = df[as.numeric(vpath)[path_component:(path_component+1)],], 
                 color = ifelse(col == "red","blue","red")) + 
       geom_path(data = df[as.numeric(vpath)[(path_component+1):length(vpath)],], color = col)
   }
   else {
-    p + geom_path(data = df[as.numeric(vpath),], color = col)
+    plot + geom_path(data = df[as.numeric(vpath),], color = col)
   }
 }
 
@@ -375,10 +375,11 @@ plot_projected_points = function(Z, path, labels) {
   print(p)
 }
 
-plot_2d_projection = function(Z, path, labels) {
+plot_2d_projection = function(Z, path, labels, slider) {
   path_ids = as.numeric(path$vpath)
   path_pts = Z[path_ids,]
   pca = prcomp(path_pts, rank.=2)
+  var_explained = sum(pca$sdev[1:2]^2)/sum(pca$sdev^2)
   
   first_label = labels[path_ids[1]]
   last_label = labels[path_ids[length(path_ids)]]
@@ -390,11 +391,42 @@ plot_2d_projection = function(Z, path, labels) {
   projected_pts = predict(pca, newdata=pts)
   
   df = data.frame(x=projected_pts[,1], y=projected_pts[,2])
-  p = ggplot(data=df, aes(x=x, y=y)) +
-    geom_point(aes(x=x, y=y, color=factor(cols))) +
-    scale_color_manual(values=hue_pal()(length(unique(labels)))[sort(unique(cols))]) +
-    labs(title="Projected Path Density", x="", y="", color="Class") +
-    geom_path(data=df[1:length(path_ids),])
+  annotate = data.frame(xpos = Inf, 
+                        ypos = Inf,
+                        text = paste0(round(var_explained, 2)),
+                        hjust = 1,
+                        vjust = 1)
+  
+  if (slider == 0) {
+    p = ggplot(data=df, aes(x=x, y=y)) +
+      geom_point(aes(x=x, y=y, color=factor(cols))) +
+      scale_color_manual(values=hue_pal()(length(unique(labels)))[sort(unique(cols))]) +
+      labs(title="Projected Path Density", x="", y="", color="Class") +
+      geom_path(data=df[1:length(path_ids),]) +
+      geom_text(data=annotate,
+                aes(x=xpos,
+                    y=ypos,
+                    hjust=hjust,
+                    vjust=vjust,
+                    label=text))
+  }
+  else {
+    color = rep(1, length(path_ids))
+    color[slider] = 2
+    
+    p = ggplot(data=df, aes(x=x, y=y)) +
+      geom_point(aes(x=x, y=y, color=factor(cols))) +
+      scale_color_manual(values=hue_pal()(length(unique(labels)))[sort(unique(cols))]) +
+      labs(title="Projected Path Density", x="", y="", color="Class") +
+      geom_path(data=df[1:length(path_ids),], color = color) +
+      geom_text(data=annotate,
+                aes(x=xpos,
+                    y=ypos,
+                    hjust=hjust,
+                    vjust=vjust,
+                    label=text))
+  }
+  
   
   print(p)
 }
