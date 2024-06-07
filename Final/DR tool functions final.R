@@ -1,0 +1,190 @@
+library(igraph)
+library(scales)
+library(ggplot2)
+library(usedist)
+
+##### MST and Shortest Path Calculation #####
+
+get_mst = function(Z_dist) {
+  Z_dist = as.matrix(Z_dist)
+  
+  graph = graph_from_adjacency_matrix(Z_dist, mode="undirected", weighted=TRUE)
+  mst(graph)
+}
+
+get_shortest_path = function(graph, from, to) {
+  path = shortest_paths(graph, from, to, output="both")
+  
+  list(epath = path$epath[[1]],
+       vpath = path$vpath[[1]])
+}
+
+##### Low-Dimensional Embedding Plot #####
+
+add_path = function(plot, df, path, slider = 0) {
+  path_ids = as.numeric(path$vpath)
+
+  color = rep(1, length(path_ids))
+  color[slider] = 2
+  
+  plot + geom_segment(data=df[path_ids,], 
+                      aes(xend=lead(x), yend=lead(y)), 
+                      color=factor(color),
+                      linewidth=0.3)
+}
+
+##### Medoid MST Plot #####
+
+get_subtree = function(tree, points) {
+  vertices = unique(unlist(all_simple_paths(tree, from = points[1], to = points[-1], mode = "out")))
+  induced_subgraph(tree, vertices)
+}
+
+plot_medoid_mst = function(plot, df, Z_dist, tree) {
+  p = plot
+  
+  meds = c()
+  
+  for (i in unique(df$cluster)) {
+    cluster_dists = dist_subset(Z_dist, which(df$cluster == i))
+    pt_dists = rowSums(as.matrix(cluster_dists))
+    
+    meds = c(meds, as.numeric(names(which(pt_dists == min(pt_dists)))[1]))
+  }
+  
+  med_tree = get_subtree(tree, meds)
+  
+  edge_matrix = as.matrix(med_tree, matrix.type = "edgelist")
+  
+  n = length(edge_matrix[,1])
+  
+  for (i in 1:n) {
+    p = p + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
+  }
+  
+  p
+}
+
+##### 2D Path Projection Plot #####
+
+plot_2d_projection = function(Z, path, cluster, id, slider) {
+  path_ids = as.numeric(path$vpath)
+  path_pts = Z[path_ids,]
+  pca = prcomp(path_pts, rank.=2)
+  var_explained = sum(pca$sdev[1:2]^2)/sum(pca$sdev^2)
+  
+  first_label = cluster[path_ids[1]]
+  last_label = cluster[path_ids[length(path_ids)]]
+  
+  ids = unique(c(path_ids, which(cluster == first_label), which(cluster == last_label)))
+  pts = Z[ids,]
+  cols = cluster[ids]
+  
+  projected_pts = predict(pca, newdata=pts)
+  
+  df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
+  
+  color = rep(1, length(path_ids))
+  color[slider] = 2
+    
+  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
+    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+    scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
+    labs(x="", y="", color="Class") +
+    geom_segment(data=df[1:length(path_ids),],
+                 aes(xend=lead(x), yend=lead(y)),
+                 color = factor(color),
+                 linewidth=0.3)
+  
+  # ggplotly doesn't translate geom_text, add annotation later
+  list(p=p, var_explained=var_explained)
+}
+
+get_medoid = function(X_dist, g) {
+  if (length(g) == 0) stop("get_medoid: cluster does not exist!")
+  
+  if (length(g) == 1) { # check if cluster contains one point
+    return(g)
+  }
+  else {
+    total_dists = rowSums(as.matrix(X_dist)[g,])
+    
+    medoid_id = which(total_dists == min(total_dists))
+    
+    g[medoid_id]
+  }
+}
+
+plot_2d_projection_brush = function(Z, Z_dist, tree, g1, g2, cluster, id, slider) {
+  medoid1_id = get_medoid(Z_dist, g1)
+  medoid2_id = get_medoid(Z_dist, g2)
+  
+  path = get_shortest_path(tree, medoid1_id, medoid2_id)
+  
+  path_ids = as.numeric(path$vpath)
+  path_pts = Z[path_ids,]
+  pca = prcomp(path_pts, rank.=2)
+  var_explained = sum(pca$sdev[1:2]^2)/sum(pca$sdev^2)
+  
+  ids = unique(c(path_ids, g1, g2))
+  pts = Z[ids,]
+  cols = cluster[ids]
+  
+  projected_pts = predict(pca, newdata=pts)
+  
+  df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
+  
+  color = rep(1, length(path_ids))
+  color[slider] = 2
+  
+  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
+    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+    scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
+    labs(x="", y="", color="Class") +
+    geom_segment(data=df[1:length(path_ids),],
+                 aes(xend=lead(x), yend=lead(y)),
+                 color = factor(color),
+                 linewidth=0.3)
+  
+  # ggplotly doesn't translate geom_text, add annotation later
+  list(p=p, var_explained=var_explained)
+}
+
+##### Path Weight Plot ######
+
+get_path_weights = function(path) {
+  epath = path$epath
+  
+  if (class(epath) != "igraph.es") {
+    stop("get_path_weights: input is not of type igraph.es")
+  }
+  
+  num_paths = length(epath[])
+  weights = vector(length = num_paths)
+  
+  for (i in 1:num_paths) {
+    weights[i] = epath[[i]]$weight
+  }
+  
+  weights
+}
+
+plot_path_weights = function(path, highlight=0, max) {
+  path_weights = get_path_weights(path)
+  num_paths = length(path_weights)
+  
+  fill = rep(0, num_paths)
+  fill[highlight] = 1
+  
+  df = data.frame(x = 1:length(path_weights), weight = path_weights, fill = factor(fill))
+  q = ggplot(df, aes(x = x, y = weight, fill = fill)) + 
+    geom_col(width=1, show.legend=FALSE) +
+    labs(y = "Weight") +
+    scale_fill_manual(values=c("black", "red")) +
+    ylim(0, max) +
+    theme(axis.title.x = element_blank(),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank())
+  
+  print(q)
+}

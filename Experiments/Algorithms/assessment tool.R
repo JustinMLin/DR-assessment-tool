@@ -427,7 +427,6 @@ plot_2d_projection = function(Z, path, labels, slider) {
                     label=text))
   }
   
-  
   print(p)
 }
 

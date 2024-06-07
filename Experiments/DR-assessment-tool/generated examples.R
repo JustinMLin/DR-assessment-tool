@@ -13,7 +13,7 @@ Z = rbind(mvrnorm(n=40, mu=c(10,0,0,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5
           mvrnorm(n=130, mu=c(0,0,0,0,-6), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))))
 Z_dist = dist(Z)
 
-X = Rtsne(Z, perplexit=10)$Y # perplexity too low
+X = Rtsne(Z, perplexit=30)$Y # perplexity too low
 X1 = prcomp(Z, center=TRUE, scale.=TRUE, rank.=2)$x
 tree = get_mst(dist(Z))
 labels = rep(1:7, c(40, 200, 100, 80, 30, 60, 130))
