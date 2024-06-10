@@ -19,8 +19,9 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
     geom_point(size=0.5) +
     labs(color="Class")
   
-  ui = navbarPage("dashboard", theme=shinytheme("cerulean"),
-                  tabPanel("Tab1",
+  ui = navbarPage(title="Dimension Reduction Assessment Tool",
+                  theme=shinytheme('cerulean'),
+                  tabPanel("Default Clusters",
                            sidebarLayout(
                              sidebarPanel(
                                width=3,
@@ -44,7 +45,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
                              )
                            )
                   ),
-                  tabPanel("Tab2",
+                  tabPanel("Custom Clusters",
                            sidebarLayout(
                              sidebarPanel(
                                width=3,
