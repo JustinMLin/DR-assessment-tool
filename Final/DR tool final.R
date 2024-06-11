@@ -3,7 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(plotly)
 library(shinythemes)
-library(shinydashboard)
+library(bslib)
 
 source("DR tool functions final.R")
 
@@ -19,60 +19,64 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
     geom_point(size=0.5) +
     labs(color="Class")
   
-  ui = navbarPage(title="Dimension Reduction Assessment Tool",
-                  theme=shinytheme('cerulean'),
-                  tabPanel("Default Clusters",
-                           sidebarLayout(
-                             sidebarPanel(
-                               width=3,
-                               numericInput("from", "From id", value = id[1]),
-                               numericInput("to", "To id", value = id[2]),
-                               uiOutput("slider"),
-                               radioButtons("med_subtree1",
-                                            label = "Show medoid subtree?",
-                                            choices = c("Hide", "Show"),
-                                            inline = TRUE)
-                             ),
-                             mainPanel(
-                               box(title="Low-Dimensional Embedding",
-                                   height=6,
-                                   width=6,
-                                   plotlyOutput("lowDimPlot")),
-                               tabBox(height=6,
-                                      width=6,
-                                      tabPanel("2D Path Projection", plotlyOutput("projPath")),
-                                      tabPanel("Path Weights", plotOutput("pathWeights")))
-                             )
-                           )
-                  ),
-                  tabPanel("Custom Clusters",
-                           sidebarLayout(
-                             sidebarPanel(
-                               width=3,
-                               actionButton("group1", "Submit Group 1"),
-                               actionButton("group2", "Submit Group 2"),
-                               actionButton("clear_brush", "Clear Groups"),
-                               numericInput("from_brush", "From id", value = id[1]),
-                               numericInput("to_brush", "To id", value = id[2]),
-                               uiOutput("slider_brush"),
-                               radioButtons("med_subtree2",
-                                            label = "Show medoid subtree?",
-                                            choices = c("Hide", "Show"),
-                                            inline = TRUE)
-                             ),
-                             mainPanel(
-                               box(title="Low-Dimensional Embedding",
-                                   height=6,
-                                   width=6,
-                                   plotlyOutput("lowDimPlot_brush")),
-                               tabBox(height=6,
-                                      width=6,
-                                      tabPanel("2D Path Projection", plotlyOutput("projPath_brush")),
-                                      tabPanel("Path Weights", plotOutput("pathWeights_brush"))
-                                      )
-                             )
-                           )
-                  )
+  ui = page_navbar(
+    title="Dimension Reduction Tool",
+    theme=bs_theme(bootswatch="cosmo"),
+    nav_panel(
+      title="Default Clusters",
+      
+      layout_sidebar(
+        sidebar=sidebar(
+          numericInput("from", "From id", value = id[1]),
+          numericInput("to", "To id", value = id[2]),
+          uiOutput("slider"),
+          radioButtons("med_subtree1",
+                       label = "Show medoid subtree?",
+                       choices = c("Hide", "Show"),
+                       inline = TRUE)
+        ),
+        
+        card(
+          card_header("Low-Dimensional Embedding"),
+          plotlyOutput("lowDimPlot")
+        ),
+        
+        navset_card_underline(
+          title="Analytical Plots",
+          nav_panel("2D Path Projection", plotlyOutput("projPath")),
+          nav_panel("Path Weights", plotOutput("pathWeights"))
+        )
+      )
+    ),
+    
+    nav_panel(
+      title="Custom Clusters",
+      layout_sidebar(
+        sidebar=sidebar(
+          actionButton("group1", "Submit Group 1"),
+          actionButton("group2", "Submit Group 2"),
+          actionButton("clear_brush", "Clear Groups"),
+          numericInput("from_brush", "From id", value = id[1]),
+          numericInput("to_brush", "To id", value = id[2]),
+          uiOutput("slider_brush"),
+          radioButtons("med_subtree2",
+                       label = "Show medoid subtree?",
+                       choices = c("Hide", "Show"),
+                       inline = TRUE)
+        ),
+        
+        card(
+          card_header("Low-Dimensional Embedding"),
+          plotlyOutput("lowDimPlot_brush")
+        ),
+        
+        navset_card_underline(
+          title="Analytical Plots",
+          nav_panel("2D Path Projection", plotlyOutput("projPath_brush")),
+          nav_panel("Path Weights", plotOutput("pathWeights_brush"))
+        )
+      )
+    )
   )
   
   server = function(input, output) {
