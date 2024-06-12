@@ -5,7 +5,7 @@ library(plotly)
 library(shinythemes)
 library(bslib)
 
-source("DR tool functions final.R")
+source("~/Desktop/Research/DR-assessment-tool/Final/DR tool functions final.R")
 
 run_app = function(Z_dist, X, cluster, id=NULL) {
   if (is.null(id)) {id = 1:nrow(X)}
@@ -22,13 +22,14 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
   ui = page_navbar(
     title="Dimension Reduction Tool",
     theme=bs_theme(bootswatch="cosmo"),
+    fillable=FALSE,
     nav_panel(
       title="Default Clusters",
       
       layout_sidebar(
         sidebar=sidebar(
-          numericInput("from", "From id", value = id[1]),
-          numericInput("to", "To id", value = id[2]),
+          numericInput("from", "From id", value = 0),
+          numericInput("to", "To id", value = 0),
           uiOutput("slider"),
           radioButtons("med_subtree1",
                        label = "Show medoid subtree?",
@@ -56,8 +57,8 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
           actionButton("group1", "Submit Group 1"),
           actionButton("group2", "Submit Group 2"),
           actionButton("clear_brush", "Clear Groups"),
-          numericInput("from_brush", "From id", value = id[1]),
-          numericInput("to_brush", "To id", value = id[2]),
+          numericInput("from_brush", "From id", value = 0),
+          numericInput("to_brush", "To id", value = 0),
           uiOutput("slider_brush"),
           radioButtons("med_subtree2",
                        label = "Show medoid subtree?",
@@ -81,16 +82,24 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
   
   server = function(input, output) {
     shortest_path = reactive({
-      get_shortest_path(tree, which(id == input$from), which(id == input$to))
+      sp = tryCatch({
+        get_shortest_path(tree, which(id == input$from), which(id == input$to))
+      }, error = function(err) {
+        return(NULL)
+      })
+      
+      sp
     })
     
     output$slider = renderUI({
-      length(get_path_weights(shortest_path()))
+      max = ifelse(is.null(shortest_path()),
+                   0,
+                   length(shortest_path()$vpath) - 1)
       
       sliderInput("slider", 
                   "Path component", 
                   min = 0, 
-                  max = length(shortest_path()$vpath) - 1, 
+                  max = max, 
                   value = 0,
                   step = 1)
     })
@@ -102,13 +111,24 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
           layout(dragmode='pan')
       }
       else {
-        ggplotly(add_path(p, plotting_df, shortest_path(), input$slider),
-                 tooltip = c("x", "y", "label")) %>%
-          layout(dragmode='pan')
+        if (is.null(shortest_path())) {
+          ggplotly(p,
+                   tooltip = c("x", "y", "label")) %>%
+            layout(dragmode='pan')
+        }
+        else {
+          ggplotly(add_path(p, plotting_df, shortest_path(), input$slider),
+                   tooltip = c("x", "y", "label")) %>%
+            layout(dragmode='pan')
+        }
       }
     })
     
     output$projPath = renderPlotly({
+      if (is.null(shortest_path())) {
+        return(plotly_empty())
+      }
+      
       ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$slider)
       
       ggplotly(ret$p,
@@ -122,13 +142,25 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
     })
     
     output$pathWeights = renderPlot({
+      if (is.null(shortest_path())) {
+        return(plotly_empty())
+      }
+      
       plot_path_weights(shortest_path(), input$slider, max_length)
     })
     
     #######################
     
     shortest_path_brush = reactive({
-      get_shortest_path(tree, which(id == input$from_brush), which(id == input$to_brush))
+      sp = tryCatch({
+        get_shortest_path(tree, 
+                          which(id == input$from_brush), 
+                          which(id == input$to_brush))
+      }, error = function(err) {
+        return(NULL)
+      })
+      
+      sp
     })
     
     rv = reactiveValues(g1 = NULL, g2 = NULL)
@@ -151,17 +183,19 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
       rv$g1 = NULL
       rv$g2 = NULL
       
-      updateNumericInput(inputId="from_brush", value=id[1])
-      updateNumericInput(inputId="to_brush", value=id[2])
+      updateNumericInput(inputId="from_brush", value=0)
+      updateNumericInput(inputId="to_brush", value=0)
     })
     
     output$slider_brush = renderUI({
-      length(get_path_weights(shortest_path_brush()))
+      max = ifelse(is.null(shortest_path_brush()),
+                   0,
+                   length(shortest_path_brush()$vpath) - 1)
       
       sliderInput("slider_brush", 
                   "Path component", 
                   min = 0, 
-                  max = length(shortest_path_brush()$vpath) - 1, 
+                  max = max, 
                   value = 0,
                   step = 1)
     })
@@ -173,23 +207,44 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
           layout(dragmode='pan')
       }
       else {
-        alpha_id = unique(c(rv$g1, rv$g2))
-        if (!is.null(alpha_id)) {
-          alpha = rep(0.3, nrow(X))
-          alpha[alpha_id] = 1
+        if (is.null(shortest_path_brush())) {
+          alpha_id = unique(c(rv$g1, rv$g2))
+          if (!is.null(alpha_id)) {
+            alpha = rep(0.3, nrow(X))
+            alpha[alpha_id] = 1
+          }
+          else {
+            alpha = rep(1, nrow(X))
+          }
+          
+          p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
+            geom_point(size=0.5, alpha=alpha) +
+            labs(color="Class")
+          
+          ggplotly(p_brush,
+                   tooltip = c("x", "y", "label")) %>%
+            layout(dragmode='select') %>%
+            event_register("plotly_selecting")
         }
         else {
-          alpha = rep(1, nrow(X))
+          alpha_id = unique(c(rv$g1, rv$g2))
+          if (!is.null(alpha_id)) {
+            alpha = rep(0.3, nrow(X))
+            alpha[alpha_id] = 1
+          }
+          else {
+            alpha = rep(1, nrow(X))
+          }
+          
+          p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
+            geom_point(size=0.5, alpha=alpha) +
+            labs(color="Class")
+          
+          ggplotly(add_path(p_brush, plotting_df, shortest_path_brush(), input$slider_brush),
+                   tooltip = c("x", "y", "label")) %>%
+            layout(dragmode='select') %>%
+            event_register("plotly_selecting")
         }
-        
-        p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
-          geom_point(size=0.5, alpha=alpha) +
-          labs(color="Class")
-        
-        ggplotly(add_path(p_brush, plotting_df, shortest_path_brush(), input$slider_brush),
-                 tooltip = c("x", "y", "label")) %>%
-          layout(dragmode='select') %>%
-          event_register("plotly_selecting")
       }
     })
     
@@ -211,6 +266,10 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
     })
     
     output$pathWeights_brush = renderPlot({
+      if (is.null(shortest_path_brush())) {
+        return(plotly_empty())
+      }
+      
       plot_path_weights(shortest_path_brush(), input$slider_brush, max_length)
     })
   }
