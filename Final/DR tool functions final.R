@@ -68,6 +68,9 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 ##### 2D Path Projection Plot #####
 
 plot_2d_projection = function(Z, path, cluster, id, slider) {
+  # convert cluster to standard form
+  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
+  
   path_ids = as.numeric(path$vpath)
   path_pts = Z[path_ids,]
   pca = prcomp(path_pts, rank.=2)
@@ -116,6 +119,9 @@ get_medoid = function(X_dist, g) {
 }
 
 plot_2d_projection_brush = function(Z, Z_dist, tree, g1, g2, cluster, id, slider) {
+  # convert cluster to standard form
+  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
+  
   medoid1_id = get_medoid(Z_dist, g1)
   medoid2_id = get_medoid(Z_dist, g2)
   
