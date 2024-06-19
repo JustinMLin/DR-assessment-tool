@@ -1,0 +1,63 @@
+---
+title: "MST Stability"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(ade4)
+library(ggplot2)
+
+source("../Final/DR tool functions final.R")
+```
+
+```{r}
+Z = rbind(mvrnorm(n=50, mu=c(10,0,0,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,-10,0,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,0,5,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,0,0,8,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,0,0,-8,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,0,0,0,4), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
+          mvrnorm(n=50, mu=c(0,0,0,0,-6), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))))
+
+Z = cbind(Z, matrix(0, nrow=nrow(Z), ncol=25))
+
+Z_dist = dist(Z)
+mst_orig = get_mst(Z_dist)
+graph_dist_orig = distances(mst_orig)
+```
+
+```{r}
+b = 50
+
+correlations = vector(length=b)
+euclidean_correlations = vector(length=b)
+
+for (i in 1:b) {
+  noise = mvrnorm(nrow(Z), mu=rep(0, ncol(Z)), Sigma=diag(rep(2, ncol(Z))))
+  Z_noise = Z + noise
+  
+  dist_mat = dist(Z_noise)
+  
+  mst = get_mst(dist_mat)
+  
+  graph_dist = distances(mst)
+  
+  correlations[i] = mantel.rtest(as.dist(graph_dist_orig), as.dist(graph_dist))$obs
+  euclidean_correlations[i] = mantel.rtest(dist(Z_noise), Z_dist)$obs
+}
+```
+
+```{r}
+df = data.frame(cor=c(euclidean_correlations, correlations),
+                type=c(rep("Euclidean", b), rep("MST", b)))
+
+ggplot(df, aes(x=cor, y=type, color=type)) +
+  geom_boxplot() +
+  xlim(-1,1)
+```
+

@@ -9,7 +9,7 @@ get_mst = function(Z_dist) {
   Z_dist = as.matrix(Z_dist)
   
   graph = graph_from_adjacency_matrix(Z_dist, mode="undirected", weighted=TRUE)
-  mst(graph)
+  igraph::mst(graph)
 }
 
 get_shortest_path = function(graph, from, to) {
@@ -40,29 +40,37 @@ get_subtree = function(tree, points) {
   induced_subgraph(tree, vertices)
 }
 
-plot_medoid_mst = function(plot, df, Z_dist, tree) {
-  p = plot
-  
+get_medoids = function(Z_dist, cluster) {
   meds = c()
   
-  for (i in unique(df$cluster)) {
-    cluster_dists = dist_subset(Z_dist, which(df$cluster == i))
+  for (i in unique(cluster)) {
+    cluster_dists = dist_subset(Z_dist, which(cluster == i))
     pt_dists = rowSums(as.matrix(cluster_dists))
     
     meds = c(meds, as.numeric(names(which(pt_dists == min(pt_dists)))[1]))
   }
   
-  med_tree = get_subtree(tree, meds)
+  meds
+}
+
+get_medoid_mst = function(Z_dist, tree, cluster) {
+  meds = get_medoids(Z_dist, cluster)
+  
+  get_subtree(tree, meds)
+}
+
+plot_medoid_mst = function(plot, df, Z_dist, tree) {
+  med_tree = get_medoid_mst(Z_dist, tree, df$cluster)
   
   edge_matrix = as.matrix(med_tree, matrix.type = "edgelist")
   
   n = length(edge_matrix[,1])
   
   for (i in 1:n) {
-    p = p + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
+    plot = plot + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
   }
   
-  p
+  plot
 }
 
 ##### 2D Path Projection Plot #####

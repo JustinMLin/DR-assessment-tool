@@ -22,7 +22,7 @@ Z = data$images[subsample,]
 real_labels = data$labels[subsample]
 
 id = subsample
-Z_pca = prcomp(Z, rank. = p)$x
+Z_pca = unname(prcomp(Z, rank. = p)$x)
 
 Z_dist = dist(Z_pca, method="manhattan")
 X = umap(Z_pca, method="umap-learn", n_neighbors=30)$layout

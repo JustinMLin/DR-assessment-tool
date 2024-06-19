@@ -8,6 +8,9 @@ library(bslib)
 source("~/Desktop/Research/DR-assessment-tool/Final/DR tool functions final.R")
 
 run_app = function(Z_dist, X, cluster, id=NULL) {
+  Z_dist = unname(Z_dist)
+  X = unname(X)
+  
   if (is.null(id)) {id = 1:nrow(X)}
   
   tree = get_mst(Z_dist)
@@ -16,7 +19,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
   
   plotting_df = data.frame(x=X[,1], y=X[,2], cluster, id, row=1:nrow(X))
   p = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
-    geom_point(size=0.5) +
+    geom_point(size=0.3) +
     labs(color="Class")
   
   ui = page_navbar(
