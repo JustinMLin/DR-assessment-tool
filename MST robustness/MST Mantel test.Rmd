@@ -37,9 +37,13 @@ b = 50
 correlations = vector(length=b)
 euclidean_correlations = vector(length=b)
 
+shep = vector(length=b)
+euclidean_shep = vector(length=b)
+
 for (i in 1:b) {
   noise = mvrnorm(nrow(Z), mu=rep(0, ncol(Z)), Sigma=diag(rep(2, ncol(Z))))
   Z_noise = Z + noise
+  Z_noise_dist = dist(Z_noise)
   
   dist_mat = dist(Z_noise)
   
@@ -48,15 +52,23 @@ for (i in 1:b) {
   graph_dist = distances(mst)
   
   correlations[i] = mantel.rtest(as.dist(graph_dist_orig), as.dist(graph_dist))$obs
-  euclidean_correlations[i] = mantel.rtest(dist(Z_noise), Z_dist)$obs
+  euclidean_correlations[i] = mantel.rtest(Z_noise_dist, Z_dist)$obs
+  
+  shep[i] = cor(as.dist(graph_dist_orig), as.dist(graph_dist), method="spearman")
+  euclidean_shep[i] = cor(Z_noise_dist, Z_dist, method="spearman")
 }
 ```
 
 ```{r}
-df = data.frame(cor=c(euclidean_correlations, correlations),
-                type=c(rep("Euclidean", b), rep("MST", b)))
+df = data.frame(cor = c(euclidean_correlations, correlations),
+                shep = c(euclidean_shep, shep),
+                type  =c(rep("Euclidean", b), rep("MST", b)))
 
 ggplot(df, aes(x=cor, y=type, color=type)) +
+  geom_boxplot() +
+  xlim(-1,1)
+
+ggplot(df, aes(x=shep, y=type, color=type)) +
   geom_boxplot() +
   xlim(-1,1)
 ```
