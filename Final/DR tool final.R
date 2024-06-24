@@ -31,8 +31,8 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
       
       layout_sidebar(
         sidebar=sidebar(
-          numericInput("from", "From id", value = 0),
-          numericInput("to", "To id", value = 0),
+          numericInput("from", "From ID", value = 0),
+          numericInput("to", "To ID", value = 0),
           uiOutput("slider"),
           radioButtons("med_subtree1",
                        label = "Show medoid subtree?",
@@ -60,8 +60,8 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
           actionButton("group1", "Submit Group 1"),
           actionButton("group2", "Submit Group 2"),
           actionButton("clear_brush", "Clear Groups"),
-          numericInput("from_brush", "From id", value = 0),
-          numericInput("to_brush", "To id", value = 0),
+          numericInput("from_brush", "From ID", value = 0),
+          numericInput("to_brush", "To ID", value = 0),
           uiOutput("slider_brush"),
           radioButtons("med_subtree2",
                        label = "Show medoid subtree?",

@@ -8,6 +8,7 @@
 \usepackage{graphicx}
 \usepackage[margin=1in]{geometry}
 
+\graphicspath{{figures/}}
 
 \title{A Tool for Visualizing and Analyzing High-Dimensional Clustering Performance}
 \author{Justin Lin\footnote{Department of Mathematics, Indiana University} and Julia Fukuyama\footnote{Department of Statistics, Indiana University}}
@@ -22,27 +23,89 @@
 The potency of nonlinear dimension reduction methods lies in their flexibility, allowing them to model complex data structures. That same flexibility, however, makes them difficult to use and interpret. Each method requires a slew of hyperparameters that need to be calibrated, and even when adequately calibrated, these methods require a trained eye to interpret. For example, the two most popular nonlinear dimension reduction methods, t-SNE and UMAP, are known to generate unintuitive results (\cite{understanding UMAP}, \cite{Distill}). The results often cluster, even when no clusters exist in the data. Moreover, cluster sizes and inter-cluster distances can be unreliable. We've developed an interactive tool that researchers may use to conduct a post-hoc analysis when applying high-dimensional clustering. The main goal of the tool is provide an additional perspective on inter-cluster relationships, making it easier to distinguish structures faithful to the signal from the noise.
 
 \section{Methods}
-Suppose our goal is to cluster a high-dimensional data set $Z \in \mathbb{R}^{n \times p}$, containing $n$ points in $p$ dimensions. To visualize the clustering, a two-dimensional representation $X \in \mathbb{R}^{n \times 2}$ can be calculated using a dimension reduction method of choice. The tool takes as input a dissimilarity matrix $D \in \mathbb{R}^{n \times n}$, representing the high-dimensional inter-point dissimilarities; the low-dimensional representation $X$; and the clustering. Optionally, the user may also provide a set of ID's to label the points. The high-dimensional dissimilarity matrix is used to construct a minimum spanning tree meant to model the global structure of the high-dimensional data.
 
 \subsection{The Minimum Spanning Tree}
-Manifold learning is the most popular approach to nonlinear dimension reduction in which the data is assumed to be uniformly drawn from a high-dimensional manifold embedded in $p$ dimensions. These methods often make use of graphs to estimate the population manifold. For example, IsoMap, the nonlinear extension of multidimensional scaling (MDS), uses
-$\epsilon$-neighborhood and $k$-neighborhood graphs \cite{IsoMap}. Hartigan's MAP test for uses minimal ascending path spanning trees to detect multimodality \cite{MAP test}. More modern examples also make use of graphs. \cite{MIST example} introduces the maximum information spanning tree and \cite{MST example} uses the minimum spanning tree (MST) for dimension reduction purposes.
+Graphs have been applied to many multivariate statistical problems. The authors of \cite{MAP test} introduced the minimal ascending path spanning tree as a way to test for multimodality. The Friedman-Rafsky test \cite{Friedman-Rafsky test}, along with its modern variations \cite{Friedman-Rafsky variation 1, Friedman-Rafsky variation 2, Friedman-Rafsky variation 3}, use the minimum spanning tree (MST) to construct a multivariate two-sample test. Single-linkage clustering \cite{single-linkage and MST} and runt pruning \cite{runt pruning} are both intimately related with the MST. In the context of dimension reduction, IsoMap \cite{IsoMap} makes use of neighborhood graphs, \cite{MIST example} introduces the maximum information spanning tree, and \cite{MST example} uses the MST. These methods, which fall under the category of manifold learning, use graphs to model high-dimensional data assumed to be drawn uniformly from a non-linear manifold. An accurate low-dimensional representation can then be constructed from these graphs. It's apparent that graphs are useful for modeling high-dimensional data, especially when it comes to dimension reduction and cluster analysis. Our tool uses the MST to analyze the reliability of visualizations produced by nonlinear dimension reduction methods.
 
-We've opted for the MST for a couple key properties.
+To construct the MST from a data set, start with a set of vertices, one for each point in the data set. When an edge is added between two vertices, its assigned a weight equal to the dissimilarity between the pair of points corresponding to the two vertices. The edges of the MST are selected from all possible edges so that the sum of edge weights is minimized and there exists a path between any two vertices. We've opted for the MST for a couple of key properties. Firstly, the MST and shortest paths along it are quick to compute. Secondly, the MST contains a unique path between any two vertices, providing inter-point distances between all pairs of points. Lastly, it provides a good summary of the data's structure. It contains as a subgraph the nearest-neighbor graph, and any edge deletion in the MST partitions the vertices into two sets for which the deleted edge is the shortest distance between them \cite{Friedman-Rafsky test}.
+
+\subsection{The Inputs}
+The interactive tool takes as input a dissimilarity matrix $D \in \mathbb{R}^{n \times n}$ representing the dissimilarities between the $n$ high-dimensional points, a two-dimensional embedding $X \in \mathbb{R}^{n \times 2}$, and a clustering $\mathcal{C} \in \{1, \hdots, k\}^n$ where $k$ is the number of classes. Optionally, it also takes a set of ID's to denote the points.
+
+The dissimilarity matrix must be a symmetric matrix with 0's along the diagonal. The entry $D_{ij} = D_{ji}$ should represent the dissimilarity or distance between points $i$ and $j$. The chosen dissimilarity measure should be appropriate for the type of data. For example, the $L_1$ norm and even fractional $L_p$ distance measures have been suggested for high-dimensional numerical data \cite{fractional Lp norms}, Jaccard and cosine metrics are popular when working with text data \cite{text data}, and a variety of Image Distance Functions (IDFs) have been suggested for image data \cite{image metrics}. From this dissimilarity matrix, the MST is calculated.
+
+\subsection{The Dashboard}
+
+\begin{figure}[t]
+\centering
+\includegraphics[scale=0.2]{dashboard}
+\caption{Dashboard}
+\end{figure}
+
+The dashboard contains two main panels, as well as a side panel include adjustable settings. The first main panel depicts the low-dimensional embedding colored according to the provided clustering. The second main panel contains analytical plots. When supplied with a pair of points via ``From ID" and ``To ID", the MST path is calculated between the high-dimensional points and corresponding path in low-dimension is drawn upon the low-dimensional embedding (Figure 1). The first analytical plot depicts a PCA projection of the high-dimensional path along with the clusters the two endpoints belong to. The PCA transform is calculated using only the points along the path then applied to the rest of the points. The second analytical plot contains a bar plot of path weights. The user may cycle through the segments along the path using the ``Path component" slider in the side panel. The corresponding segment will be highlighted in both the low-dimensional embedding and the 2D path projection. The corresponding path weight will also be highlighted in the plot of path weights.
+
+To get a holistic view of the data's structure, the user may view the medoid subtree by selecting ``Show" in the side panel. The medoid subtree is the minimal subtree of the MST containing the medoid of each class. The medoid subtree represents the global arrangement of clusters.
+
+Along the top bar, the user may also navigate to the next page named ``Custom Clusters". This page contains the same plots, but the user may instead define their own clusters of interest. To define a cluster, the use may select a subset of points by clicking and dragging along the low-dimensional embedding plot. Once the points are selected, the user can save the selected points by clicking ``Submit Group 1". The user must then repeat the process with the second cluster of interest and click ``Submit Group 2". Once both clusters have been submitted, the path between the (high-dimensional) medoids of the selected clusters will be portrayed. The 2D path projection will contain the points along the path along with the selected points.
 
 \newpage
 
 \begin{thebibliography}{10}
+
+\bibitem{fractional Lp norms}
+Charu C. Aggarwal, Alexander Hinneburg, and Daniel A. Keim.
+\newblock On the surprising behavior of distance metrics in high dimensional space.
+\newblock {\em Lecture Notes in Computer Science, vol. 1973}, 2001.
+
+\bibitem{Friedman-Rafsky variation 1}
+Bhaswar B. Bhattacharya.
+\newblock A general asymptotic framework for distribution-free graph-based two-sample tests.
+\newblock {\em Journal of the Royal Statistical Society Series B: Statistical Methodology 81:3, 575-602}, 2019.
+
+\bibitem{Friedman-Rafsky variation 2}
+Hao Chen and Jerome H. Friedman.
+\newblock A new graph-based two-sample test for multivariate and object data.
+\newblock {\em Journal of the American Statistical Association 112:517, 397-409}, 2017.
+
+\bibitem{Friedman-Rafsky variation 3}
+Hao Chen, Xu Chen, and Yi Su.
+\newblock A weighted edge-count two-sample test for multivariate and object data.
+\newblock {\em Journal of the American Statistical Association 113:523, 1146-1155}, 2018.
 
 \bibitem{understanding UMAP}
 Andy Coenen and Adam Pearce for Google PAIR.
 \newblock Understanding UMAP.
 \newblock {\em https://pair-code.github.io/understanding-umap/}.
 
+\bibitem{image metrics}
+Vito Di Ges\`u and Valery Starovoitov.
+\newblock Distance-based functions for image comparison.
+\newblock {\em Pattern Recognition Letters 20:2, 207-214}, 1999
+
+\bibitem{single-linkage and MST}
+J. C. Gower and G. J. S. Ross.
+\newblock Minimum spanning trees and single linkage cluster analysis.
+\newblock {\em Journal of the Royal Statistical Society. Series C (Applied Statistics) 18:1, 54-64}, 1969.
+
+\bibitem{Friedman-Rafsky test}
+Jerome H. Friedman and Lawrence C. Rafsky.
+\newblock Multivariate generalizations of the Wald-Wolfowitz and Smirnov two-sample tests.
+\newblock {\em Annals of Statistics 7:4, 697-717}, 1979.
+
 \bibitem{MIST example}
 Bracken M. King and Bruce Tidor.
 \newblock MIST: Maximum information spanning trees for dimension reduction of biological data sets.
 \newblock {\em Bioinformatics 25:9, 1165-1172}, 2009.
+
+\bibitem{text data}
+Abdul Wahab Qurashi, Violeta Holmes, and Anju P. Johnson.
+\newblock Document processing: Methods for semantic text similarity analysis.
+\newblock {\em IEEE}, 2020.
+
+\bibitem{runt pruning}
+Werner Stuetzle.
+\newblock Estimating the cluster tree of a density by analyzing the minimal spanning tree of a sample.
+\newblock {\em Journal of Classification 20, 25-47}, 2003.
 
 \bibitem{IsoMap}
 Joshua B. Tenenbaum, Vin de Silva, and John C. Langford.
