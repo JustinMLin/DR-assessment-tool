@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  21 JUN 2024 16:48
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  24 JUN 2024 12:07
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -270,41 +270,55 @@ File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 
 {/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}{/usr/loc
 al/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
-<figures//dashboard.png, id=16, 1268.74pt x 1219.55624pt>
+<figures//dashboard.png, id=16, 896.148pt x 382.374pt>
 File: figures//dashboard.png Graphic file (type png)
 <use figures//dashboard.png>
-Package pdftex.def Info: figures//dashboard.png  used on input line 41.
-(pdftex.def)             Requested size: 253.7435pt x 243.90692pt.
- [2 <./figures//dashboard.png>] [3] [4] (./DR_assessment_manuscript.aux) ) 
+Package pdftex.def Info: figures//dashboard.png  used on input line 43.
+(pdftex.def)             Requested size: 421.1896pt x 179.71579pt.
+ [2 <./figures//dashboard.png>]
+<figures//MNIST kmeans.png, id=28, 1028.84375pt x 536.0025pt>
+File: figures//MNIST kmeans.png Graphic file (type png)
+<use figures//MNIST kmeans.png>
+Package pdftex.def Info: figures//MNIST kmeans.png  used on input line 63.
+(pdftex.def)             Requested size: 442.3942pt x 230.47658pt.
+<figures//MNIST (orange red).png, id=29, 775.698pt x 469.755pt>
+File: figures//MNIST (orange red).png Graphic file (type png)
+<use figures//MNIST (orange red).png>
+Package pdftex.def Info: figures//MNIST (orange red).png  used on input line 77
+.
+(pdftex.def)             Requested size: 387.84804pt x 234.87692pt.
+ [3 <./figures//MNIST kmeans.png>] [4 <./figures//MNIST (orange red).png>] [5] 
+(./DR_assessment_manuscript.aux) ) 
 Here is how much of TeX's memory you used:
- 3391 strings out of 476025
- 54837 string characters out of 5790018
- 1859388 words of memory out of 5000000
- 23814 multiletter control sequences out of 15000+600000
- 521663 words of font info for 67 fonts, out of 8000000 for 9000
+ 3418 strings out of 476025
+ 55551 string characters out of 5790018
+ 1860388 words of memory out of 5000000
+ 23838 multiletter control sequences out of 15000+600000
+ 521971 words of font info for 68 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 57i,11n,62p,1455b,301s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr
-/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/
-local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/lo
-cal/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></usr/loca
-l/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/local/
-texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/te
-xlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texl
-ive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texliv
-e/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/2
-023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2023
-/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2023/te
-xmf-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2023/texm
-f-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2023/texmf-
-dist/fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2023/texmf-di
-st/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2023/texm
-f-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2023/texmf-
-dist/fonts/type1/public/cm-super/sfrm0800.pfb>
-Output written on DR_assessment_manuscript.pdf (4 pages, 345348 bytes).
+ 57i,11n,62p,1447b,301s stack positions out of 10000i,1000n,20000p,200000b,200000s
+</usr/local/texlive/2023/texmf-dist/fonts/typ
+e1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type
+1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1
+/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/p
+ublic/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/pub
+lic/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/publi
+c/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/am
+sfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsf
+onts/cm/cmr6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfont
+s/cm/cmr8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/c
+m/cmr9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/c
+msy6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cms
+y9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9
+.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/ms
+bm10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm06
+00.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm0800
+.pfb>
+Output written on DR_assessment_manuscript.pdf (5 pages, 2123856 bytes).
 PDF statistics:
- 101 PDF objects out of 1000 (max. 8388607)
- 60 compressed objects within 1 object stream
+ 113 PDF objects out of 1000 (max. 8388607)
+ 65 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 6 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 16 words of extra memory for PDF output out of 10000 (max. 10000000)
 
