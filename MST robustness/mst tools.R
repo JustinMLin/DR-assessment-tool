@@ -2,34 +2,38 @@ library(igraph)
 library(ggplot2)
 library(dplyr)
 library(usedist)
+library(ape)
 
 source('../Final/DR tool functions final.R')
 
-simplify_graph = function(tree, pts) {
-  num_pts = length(pts)
-  
-  graph = make_empty_graph(n=num_pts, directed=FALSE)
-  graph = set_vertex_attr(graph, "name", value=as.character(pts))
-  
-  for (i in 1:(num_pts - 1)) {
-    for (j in (i+1):num_pts) {
-      sp = get_shortest_path(tree, pts[i], pts[j])
-      
-      if (!any(pts[-c(i,j)] %in% sp$vpath$name)) {
-        graph = add_edges(graph, 
-                          edges=c(which(V(graph)$name == pts[i]), which(V(graph)$name == pts[j])),
-                          attr=list(weight=sum(sp$epath$weight)))
-      }
+simplify_graph = function(tree, medoids) {
+  while(TRUE) {
+    node = setdiff(x=names(which(igraph::degree(tree) == 2)), y=medoids)[1]
+    
+    if (is.na(node)) {
+      return(tree)
     }
+    
+    neighbors = neighbors(tree, v=node)$name
+    if (length(neighbors) != 2) {
+      stop("Chosen node does not have degree 2!")
+    }
+    
+    total_weight = sum(get_shortest_path(tree, 
+                                         which(V(tree)$name == neighbors[1]), 
+                                         which(V(tree)$name == neighbors[2]))$epath$weight)
+    
+    tree = add_edges(tree, edges=neighbors,
+                     attr=list(weight = total_weight))
+    tree = tree - node
   }
-  
-  graph
 }
 
 get_simple_medoid_mst = function(Z_dist, tree, cluster) {
   meds = get_medoids(Z_dist, cluster)
+  med_mst = get_medoid_mst(Z_dist, tree, cluster)
   
-  simplify_graph(tree, meds)
+  simplify_graph(med_mst, meds)
 }
 
 plot_tree = function(X, tree, cluster) {
@@ -51,4 +55,56 @@ plot_tree = function(X, tree, cluster) {
   }
   
   graph
+}
+
+get_root = function(tree) {
+  row_sums = rowSums(distances(tree))
+  
+  for (i in 1:length(row_sums)) {
+    pt = which(rank(row_sums, ties.method="first") == i)
+    deg = igraph::degree(tree)[pt]
+    if (deg > 1) {
+      return(names(pt))
+    }
+  }
+  
+  return("Could not find root!")
+}
+
+tree_to_phylo = function(tree, cluster, weighted=FALSE) {
+  root = get_root(tree)
+  
+  leaves = names(which(igraph::degree(tree) == 1))
+  leaf_classes = cluster[as.numeric(leaves)]
+  
+  dfs_order = dfs(tree, root=root)$order$name
+  nodes = setdiff(x=dfs_order, y=leaves)
+  
+  names = c(leaves, nodes)
+  
+  phylo_tree = list()
+  class(phylo_tree) = "phylo"
+  
+  edge_mat = matrix(nrow=length(E(tree)), ncol=2)
+  for (i in 1:nrow(edge_mat)) {
+    head = head_of(tree, i)$name
+    tail = tail_of(tree, i)$name
+    
+    if (which(dfs_order == head) < which(dfs_order == tail)) {
+      temp = head
+      head = tail
+      tail = temp
+    }
+    
+    edge_mat[i,] = c(which(names == tail), which(names == head))
+  }
+  phylo_tree$edge = edge_mat
+  
+  if (weighted == TRUE) {phylo_tree$edge.length = E(tree)$weight}
+  
+  phylo_tree$Nnode = length(nodes)
+  phylo_tree$node.label = nodes
+  phylo_tree$tip.label = sapply(leaf_classes, function(i) {paste0("Class ", i)})
+
+  phylo_tree
 }

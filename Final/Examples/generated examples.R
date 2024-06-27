@@ -2,7 +2,7 @@ library(MASS)
 library(Rtsne)
 
 set.seed(4323)
-source("DR tool functions final.r")
+source("../DR tool functions final.r")
 
 Z = rbind(mvrnorm(n=40, mu=c(10,0,0,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
           mvrnorm(n=200, mu=c(0,-10,0,0,0), Sigma=diag(abs(rnorm(n=5, mean=0, sd=5)))),
