@@ -57,24 +57,16 @@ plot_tree = function(X, tree, cluster) {
   graph
 }
 
-get_root = function(tree) {
-  row_sums = rowSums(distances(tree))
+get_root = function(Z_dist, cluster, medoid_class) {
+  meds = get_medoids(Z_dist, cluster)
   
-  for (i in 1:length(row_sums)) {
-    pt = which(rank(row_sums, ties.method="first") == i)
-    deg = igraph::degree(tree)[pt]
-    if (deg > 1) {
-      return(names(pt))
-    }
-  }
-  
-  return("Could not find root!")
+  as.character(meds[which(cluster[meds] == medoid_class)])
 }
 
-tree_to_phylo = function(tree, cluster, weighted=FALSE) {
-  root = get_root(tree)
+tree_to_phylo = function(Z_dist, tree, cluster, medoid_class, weighted=FALSE) {
+  root = get_root(Z_dist, cluster, medoid_class)
   
-  leaves = names(which(igraph::degree(tree) == 1))
+  leaves = setdiff(names(which(igraph::degree(tree) == 1)), y=root)
   leaf_classes = cluster[as.numeric(leaves)]
   
   dfs_order = dfs(tree, root=root)$order$name
