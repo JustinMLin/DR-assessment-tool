@@ -21,7 +21,7 @@ cluster = rep(1:7, c(40, 200, 100, 80, 30, 60, 130))
 
 og_mst = get_mst(Z_dist)
 og_tree = get_simple_medoid_mst(Z_dist, og_mst, cluster)
-og_phylo = tree_to_phylo(Z_dist, og_tree, cluster, 6, weighted=FALSE)
+og_phylo = tree_to_phylo(Z_dist, og_tree, cluster, 6, weighted=TRUE)
 
 ######################################
 b = 60
@@ -36,7 +36,7 @@ for (i in 1:b) {
   mst = get_mst(Z_noise_dist)
   tree = get_simple_medoid_mst(Z_noise_dist, mst, cluster)
   
-  phylo = tree_to_phylo(Z_noise_dist, tree, cluster, 6, weighted=FALSE)
+  phylo = tree_to_phylo(Z_noise_dist, tree, cluster, 6, weighted=TRUE)
   
   dists[i] = ClusteringInfoDistance(og_phylo, phylo)
 }
