@@ -1,4 +1,5 @@
 library(ape)
+library(TreeDist)
 
 ptree <- list()
 class(ptree) <- "phylo"
@@ -28,3 +29,4 @@ plot.phylo(ptree1,show.node.label = TRUE)
 
 
 ClusteringInfoDistance(ptree, ptree1)
+RobinsonFoulds(ptree, ptree1)

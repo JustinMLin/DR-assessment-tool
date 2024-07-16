@@ -53,10 +53,18 @@ get_medoids = function(Z_dist, cluster) {
   meds
 }
 
-get_medoid_mst = function(Z_dist, tree, cluster) {
+get_medoid_mst = function(Z_dist, mst, cluster) {
   meds = get_medoids(Z_dist, cluster)
   
-  get_subtree(tree, meds)
+  tree = get_subtree(mst, meds)
+  V(tree)$medoid = NA
+  
+  cluster_uniq = unique(cluster)
+  for (i in 1:length(cluster_uniq)) {
+    V(tree)$medoid[which(V(tree)$name == meds[i])] = cluster_uniq[i]
+  }
+  
+  tree
 }
 
 plot_medoid_mst = function(plot, df, Z_dist, tree) {

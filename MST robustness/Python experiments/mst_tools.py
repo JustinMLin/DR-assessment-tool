@@ -1,5 +1,6 @@
 import igraph as ig
 import numpy as np
+import networkx as nx
 
 def get_shortest_path(graph, from_name ,to_name):
     epath = graph.get_shortest_paths(v=from_name, 
@@ -73,8 +74,13 @@ def get_subtree(tree, pt_names):
 
 def get_medoid_mst(Z_dist, mst, cluster):
     meds = mst.vs[get_medoids(Z_dist, cluster)]['name']
+    tree = get_subtree(mst, meds)
+    tree.vs['medoid'] = None
     
-    return meds, get_subtree(mst, meds)
+    for med in meds:
+        tree.vs.find(med)['medoid'] = med
+    
+    return meds, tree
         
 
 def get_simple_medoid_mst(Z_dist, mst, cluster):
@@ -87,3 +93,12 @@ def get_simple_medoid_mst(Z_dist, mst, cluster):
     meds, med_mst = get_medoid_mst(Z_dist, mst, cluster)
     
     return simplify_graph(med_mst, meds)
+
+# Non-medoid nodes considered equal regardless of label
+def return_eq(node1, node2):
+    if node1['medoid'] == None and node2['medoid'] == None:
+        return True
+    elif node1['medoid'] != None and node2['medoid'] != None:
+        return node1['medoid'] == node2['medoid']
+    else:
+        return False

@@ -100,3 +100,42 @@ tree_to_phylo = function(Z_dist, tree, cluster, medoid_class, weighted=FALSE) {
 
   phylo_tree
 }
+
+RF_partitions = function(tree, meds) {
+  num_edges = length(E(tree))
+  
+  ret_mat = matrix(nrow = num_edges, ncol=length(meds))
+  
+  for (i in 1:num_edges) {
+    ret_mat[i,] = components(tree - E(tree)[i])$membership[meds]
+  }
+  
+  ret_mat
+}
+
+# Make first medoid in each row label = 1
+convert_mat = function(part) {
+  for (i in 1:nrow(part)) {
+    if (part[i,1] == 2) {
+      part[i,] = 3 - part[i,]
+    }
+  }
+  
+  part
+}
+
+RF_dist = function(tree1, tree2) {
+  if (!setequal(unique(na.omit(V(tree1)$medoid)), 
+                unique(na.omit(V(tree2)$medoid)))) {
+    stop("RF_dist: tree1 and tree2 do not have matching medoids!")
+  }
+
+  part1 = convert_mat(RF_partitions(tree1, V(tree1)$name[!is.na(V(tree1)$medoid)]))
+  part1 = part1[!duplicated(part1),]
+  
+  part2 = convert_mat(RF_partitions(tree2, V(tree2)$name[!is.na(V(tree2)$medoid)]))
+  part2 = part2[!duplicated(part2),]
+  
+  temp = duplicated(rbind(part1, part2))
+  sum(!temp) - sum(temp)
+}

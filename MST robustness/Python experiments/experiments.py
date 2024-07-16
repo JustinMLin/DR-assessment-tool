@@ -5,11 +5,6 @@ import matplotlib.pyplot as plt
 import mst_tools
 from scipy.spatial import distance_matrix
 
-Z = np.array([[1,-2], [2,1], [0,2], [0, -2], [-2, 3], [-2,-4,], [5,-1]])
-
-cluster = np.array([1,2,1,3,2,3,2])
-
-
 Z = np.concatenate(
     [np.random.multivariate_normal(mean=[10,0,0,0], 
                                    cov=np.diag([5,5,5,5]),
@@ -54,7 +49,9 @@ for i in range(b):
     tree = mst_tools.get_simple_medoid_mst(Z_noise_dist, mst, cluster)
     network = tree.to_networkx()
     
-    dists[count] = nx.graph_edit_distance(og_network, network)
+    dists[count] = nx.graph_edit_distance(og_network, 
+                                          network, 
+                                          node_match=mst_tools.return_eq)
     
     count += 1
     
