@@ -77,8 +77,9 @@ def get_medoid_mst(Z_dist, mst, cluster):
     tree = get_subtree(mst, meds)
     tree.vs['medoid'] = None
     
-    for med in meds:
-        tree.vs.find(med)['medoid'] = med
+    cluster_unique = np.unique(cluster)
+    for i in range(len(cluster_unique)):
+        tree.vs.find(meds[i])['medoid'] = np.unique(cluster)[i]
     
     return meds, tree
         
