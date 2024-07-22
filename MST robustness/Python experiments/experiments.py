@@ -33,26 +33,31 @@ og_mst = mst_tools.get_mst(Z_dist)
 og_tree = mst_tools.get_simple_medoid_mst(Z_dist, og_mst, cluster)
 og_network = og_tree.to_networkx()
 
-b = 60
-dists = np.empty(b, dtype='int')
+b = 200
+ged = np.empty(b, dtype=int)
+RF= np.empty(b, dtype=float)
+Z_list = []
 
 count = 0
 for i in range(b):
     noise = np.random.multivariate_normal(mean=[0,0,0,0],
                                           cov=np.diag([2,2,2,2]),
                                           size=Z.shape[0])
-    
     Z_noise = Z + noise
+    Z_list.append(Z_noise)
     Z_noise_dist = distance_matrix(Z_noise, Z_noise)
     
     mst = mst_tools.get_mst(Z_noise_dist)
     tree = mst_tools.get_simple_medoid_mst(Z_noise_dist, mst, cluster)
     network = tree.to_networkx()
     
-    dists[count] = nx.graph_edit_distance(og_network, 
-                                          network, 
-                                          node_match=mst_tools.return_eq)
+    ged[count] = nx.graph_edit_distance(og_network, 
+                                        network, 
+                                        node_match=mst_tools.return_eq)
+    RF[count] = mst_tools.RF_dist(og_tree, tree)
     
     count += 1
     
-plt.hist(dists)
+plt.scatter(ged, RF)
+plt.hist(RF)
+print(np.corrcoef(ged, RF))

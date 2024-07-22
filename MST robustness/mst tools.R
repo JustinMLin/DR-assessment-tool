@@ -3,6 +3,7 @@ library(ggplot2)
 library(dplyr)
 library(usedist)
 library(ape)
+library(sets)
 
 source('../Final/DR tool functions final.R')
 
@@ -101,41 +102,34 @@ tree_to_phylo = function(Z_dist, tree, cluster, medoid_class, weighted=FALSE) {
   phylo_tree
 }
 
-RF_partitions = function(tree, meds) {
-  num_edges = length(E(tree))
+partition_to_set = function(meds, arr) {
+  set1 = as.set(meds[arr == 1])
+  set2 = as.set(meds[arr == 2])
   
-  ret_mat = matrix(nrow = num_edges, ncol=length(meds))
-  
-  for (i in 1:num_edges) {
-    ret_mat[i,] = components(tree - E(tree)[i])$membership[meds]
-  }
-  
-  ret_mat
+  as.set(list(set1, set2))
 }
 
-# Make first medoid in each row label = 1
-convert_mat = function(part) {
-  for (i in 1:nrow(part)) {
-    if (part[i,1] == 2) {
-      part[i,] = 3 - part[i,]
-    }
+RF_partitions = function(tree) {
+  num_edges = length(E(tree))
+  
+  is_medoid = !is.na(V(tree)$medoid)
+  meds = V(tree)$medoid[is_medoid]
+  
+  partitions = set(partition_to_set(meds, components(tree - E(tree)[1])$membership[is_medoid]))
+  for (i in 2:num_edges) {
+    new_partition = partition_to_set(meds, components(tree - E(tree)[i])$membership[is_medoid])
+    partitions = set_union(partitions, set(new_partition))
   }
   
-  part
+  partitions
 }
 
 RF_dist = function(tree1, tree2) {
-  if (!setequal(unique(na.omit(V(tree1)$medoid)), 
-                unique(na.omit(V(tree2)$medoid)))) {
-    stop("RF_dist: tree1 and tree2 do not have matching medoids!")
-  }
-
-  part1 = convert_mat(RF_partitions(tree1, V(tree1)$name[!is.na(V(tree1)$medoid)]))
-  part1 = part1[!duplicated(part1),]
+  part1 = RF_partitions(tree1)
+  part2 = RF_partitions(tree2)
   
-  part2 = convert_mat(RF_partitions(tree2, V(tree2)$name[!is.na(V(tree2)$medoid)]))
-  part2 = part2[!duplicated(part2),]
+  d = length(set_symdiff(part1, part2))
+  s = length(set_intersection(part1, part2))
   
-  temp = duplicated(rbind(part1, part2))
-  sum(!temp) - sum(temp)
+  d / (d + 2*s)
 }

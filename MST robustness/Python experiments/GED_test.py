@@ -17,3 +17,5 @@ h_net = h.to_networkx()
 
 # should be 3
 print(nx.graph_edit_distance(g_net, h_net, node_match=mst_tools.return_eq))
+
+print(mst_tools.RF_dist(g,h))

@@ -38,9 +38,9 @@ og_tree = get_simple_medoid_mst(Z_dist, og_mst, cluster)
 ```
 
 ```{r}
-b = 30
+b = 50
 mat_list = list()
-for (i in 1:30) {
+for (i in 1:b) {
   mat_list[[i]] = Z + mvrnorm(nrow(Z), mu=rep(0, ncol(Z)), Sigma=diag(rep(2, ncol(Z))))
 }
 ```

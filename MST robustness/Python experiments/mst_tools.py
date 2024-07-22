@@ -83,7 +83,6 @@ def get_medoid_mst(Z_dist, mst, cluster):
     
     return meds, tree
         
-
 def get_simple_medoid_mst(Z_dist, mst, cluster):
     try:
         mst.vs['name']
@@ -103,3 +102,30 @@ def return_eq(node1, node2):
         return node1['medoid'] == node2['medoid']
     else:
         return False
+    
+#################################
+
+def partition_to_set(meds, arr):
+    set1 = frozenset(meds[arr == 0])
+    set2 = frozenset(meds[arr == 1])
+    return frozenset({set1, set2})
+
+def RF_partitions(graph):
+    num_edges = len(graph.es)
+    
+    is_medoid = np.array(graph.vs['medoid']) != None
+    meds = np.array(graph.vs['medoid'])[is_medoid]
+    
+    partitions = set()
+    for i in range(num_edges):
+        partitions.add(partition_to_set(meds, np.array(ig.GraphBase.connected_components(graph - graph.es[i]))[is_medoid]))
+    
+    return partitions
+
+def RF_dist(tree1, tree2):
+    part1 = RF_partitions(tree1)
+    part2 = RF_partitions(tree2)
+
+    d = len(part1.symmetric_difference(part2))
+    s = len(part1.intersection(part2))
+    return d / (d + 2*s)
