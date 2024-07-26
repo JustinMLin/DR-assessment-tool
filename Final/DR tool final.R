@@ -221,7 +221,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
           }
           
           p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
-            geom_point(size=0.5, alpha=alpha) +
+            geom_point(size=0.3, alpha=alpha) +
             labs(color="Class")
           
           ggplotly(p_brush,
