@@ -256,7 +256,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
         return(plotly_empty())
       }
       
-      ret = plot_2d_projection_brush(Z, Z_dist, tree, rv$g1, rv$g2, cluster, id, input$slider_brush)
+      ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, cluster, id, input$slider_brush)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%

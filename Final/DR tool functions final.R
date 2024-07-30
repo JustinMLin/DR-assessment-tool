@@ -119,29 +119,9 @@ plot_2d_projection = function(Z, path, cluster, id, slider) {
   list(p=p, var_explained=var_explained)
 }
 
-get_medoid = function(X_dist, g) {
-  if (length(g) == 0) stop("get_medoid: cluster does not exist!")
-  
-  if (length(g) == 1) { # check if cluster contains one point
-    return(g)
-  }
-  else {
-    total_dists = rowSums(as.matrix(X_dist)[g,])
-    
-    medoid_id = which(total_dists == min(total_dists))
-    
-    g[medoid_id]
-  }
-}
-
-plot_2d_projection_brush = function(Z, Z_dist, tree, g1, g2, cluster, id, slider) {
+plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, slider) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-  
-  medoid1_id = get_medoid(Z_dist, g1)
-  medoid2_id = get_medoid(Z_dist, g2)
-  
-  path = get_shortest_path(tree, medoid1_id, medoid2_id)
   
   path_ids = as.numeric(path$vpath)
   path_pts = Z[path_ids,]
@@ -170,6 +150,21 @@ plot_2d_projection_brush = function(Z, Z_dist, tree, g1, g2, cluster, id, slider
   
   # ggplotly doesn't translate geom_text, add annotation later
   list(p=p, var_explained=var_explained)
+}
+
+get_medoid = function(X_dist, g) {
+  if (length(g) == 0) stop("get_medoid: cluster does not exist!")
+  
+  if (length(g) == 1) { # check if cluster contains one point
+    return(g)
+  }
+  else {
+    total_dists = rowSums(as.matrix(X_dist)[g,])
+    
+    medoid_id = which(total_dists == min(total_dists))
+    
+    g[medoid_id]
+  }
 }
 
 ##### Path Weight Plot ######

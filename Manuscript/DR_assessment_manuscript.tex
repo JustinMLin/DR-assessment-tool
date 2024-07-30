@@ -38,7 +38,7 @@ The MST is meant to provide a robust estimation of the data's global structure, 
 To derive the inter-cluster relationships from the MST, we simplified the medoid subtree using the following procedure:
 
 \begin{algorithm}[H]
-\caption{simplified medoid subtree}\label{algo1}
+\caption{Simplified Medoid Subtree}\label{algo1}
 \begin{algorithmic}[1]
 \Require MST $T = (V, E)$ with medoid vertices $m_1, \hdots, m_k \in V$
 \State $T' = (V', E') \Leftarrow$ minimal subtree of $T$ containing all medoid vertices $m_i$
@@ -112,7 +112,7 @@ The dashboard contains two main panels as well as a side panel including adjusta
 
 To get a holistic view of the data's global structure, the user may view the medoid subtree by selecting ``Show" in the side panel (Figure 2b). The medoid subtree is the minimal subtree of the MST containing the medoid of each class. The medoid subtree describes the global arrangement of clusters.
 
-Along the top bar, the user may also navigate to the next page named ``Custom Clusters". This page contains the same plots, but the user may instead define their own clusters of interest. To define a cluster, the user must select a subset of points by clicking and dragging along the low-dimensional embedding plot. Once the points are selected, the user can save the selected points by clicking ``Submit Group 1". The user must then repeat the process with the second cluster of points and click ``Submit Group 2". Once both clusters have been submitted, the path between the (high-dimensional) medoids of the selected clusters is portrayed. The 2D path projection will contain the points along the path together with the selected points. This page is highly useful for analyzing spacial clusters that may not be represented by the provided clustering.
+Along the top bar, the user may also navigate to the next page named ``Custom Clusters". This page contains the same plots, but the user may instead define their own clusters of interest. To define a cluster, the user must select a subset of points by clicking and dragging along the low-dimensional embedding plot. Once the points are selected, the user can save the selected points by clicking ``Submit Group 1". The user must then repeat the process with the second cluster of points and click ``Submit Group 2". Once both clusters have been submitted, the path between the (high-dimensional) medoids of the selected clusters is portrayed. The user may also adjust the endpoints of the path. The 2D path projection will contain the points along the path together with the selected points. This page is highly useful for analyzing spacial clusters that may not be represented by the provided clustering.
 
 \section{Results}
 \subsection{MNIST}
@@ -120,8 +120,10 @@ The MNIST database is a collection of 70,000 images of handwritten digits \cite{
 
  To demonstrate how to use the tool, we analyze a hypothetical clustering instead of the true class labels. k-means was applied to the processed high-dimensional data with 10 clusters,  one for each digit. k-means does not agree with the UMAP embedding for certain clusters (Figure 3).
  
- \subsubsection{Classes One and Six}
- The UMAP embedding suggests classes one and six could be combined into one cluster. k-Means is known to struggle with clusters of varying sizes and densities, so it may have incorrectly separated this cluster into two classes.
+\subsubsection{Classes One and Two}
+The UMAP embedding suggests classes one and two could be combined into one cluster. k-Means is known to struggle with clusters of varying sizes and densities, so it may have incorrectly separated this cluster into two classes.
+
+To start, we navigate to the custom clusters tab and select the class one and class six points as our two groups. The path connecting the high-dimensional medoids is projected on the low-dimensional plot. The path exhibits minimal complexity and does not pass through any other clusters. Moreover, the path weights are consistent and relatively small (the path weights are scaled relative to the longest path in the MST). The edge connecting the two classes is also no longer than other edges along the path. This implies the class one and class two points are tightly packed, suggesting they represent the same digit.
  
  \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{3}
@@ -130,7 +132,20 @@ The MNIST database is a collection of 70,000 images of handwritten digits \cite{
 \includegraphics[scale=0.43]{MNIST kmeans}
 \caption{k-Means Applied to MNIST Data}
 \end{figure*}
- 
+
+\subsubsection{Class Four}
+The class four points are split into two separate clusters. To understand their relationship, we select the clusters as our two groups then select endpoints contained in the center of each cluster. The resulting path is long and complex while also passing through various other clusters. Though the complexity is exaggerated by the low-dimensional embedding. Inspection of the path weights reveals the other clusters the path passes through are not as far away from the class four clusters as depicted. In fact, the longest segments along the path are contained within the two class four clusters. k-means is known to struggle with data with nonuniform density, so these points were grouped together due to their low density. While the circuitous path suggests the class four clusters represent separate digits, the clusters may still represent similarly looking digits.
+
+\subsubsection{Classes Three, Five, and Eight}
+Looking at classes three, five, and eight, the upper portions of each class seem to form an elongated cluster together. To determine if this is a cohesive cluster, we select half of the cluster as group one and the other half as group two. We also switch the endpoints to construct a path that spans the entirety of the cluster while also ensuring all three classes are represented in the 2D path projection plot.
+
+The resulting path passes from class five, to class eight, then to class three. Along the way, the path also passes through a couple class one points, some within the elongated cluster and some outside. Investigation of the path weights reveals that the exterior class one points aren't nearly as far removed as depicted. The low-dimensional separation is a result of the non-linear dimension reduction. Therefore, the path connecting the endpoints of the elongated cluster is relatively direct with minimal complexity, suggesting the upper portions of classes three, five, and eight represent the same digit.
+
+The natural follow-up is to investigate the lower portions of classes three, five, and eight. Again, we split the cluster in half to serve as our two groups and adjust the endpoints to get a path that spans the entire cluster. The resulting path passes through classes one and two as well as the cluster consisting of the upper portions of classes three, five, and eight. The path weights, as discussed previously, show the low-dimensional embedding exaggerates the distance between classes one/two and classes three/five/eight. While the path passes through other clusters, they are all nearby, so there is a lack of conclusive evidence.
+
+\subsection{The True Class Labels}
+To verify the analysis, we reference the true class labels. It was correct to combine classes one and six. Together, they represent the digit one. It was correct to separate class four into two separate clusters. The two clusters represent digits five and eight, which aligns with our hypothesis that the clusters are separate, but represent similarly looking digits. The upper portions of classes three, five, and eight do, in fact, represent the same digit. They represent the digit seven. And lastly, the lower portions of classes three, five, and eight represent the digits three and nine. These digits were tough to distinguish and very similar numerically, as illustrated by their overlapping nature in the low-dimensional embedding.
+
 \newpage
 
 \begin{thebibliography}{10}
