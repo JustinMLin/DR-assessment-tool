@@ -33,6 +33,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
         sidebar=sidebar(
           numericInput("from", "From ID", value = 0),
           numericInput("to", "To ID", value = 0),
+          numericInput("adjust", "Bandwidth Adjustment", value = 1, step = .05),
           uiOutput("slider"),
           radioButtons("med_subtree1",
                        label = "Show medoid subtree?",
@@ -132,7 +133,7 @@ run_app = function(Z_dist, X, cluster, id=NULL) {
         return(plotly_empty())
       }
       
-      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$slider)
+      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$slider, input$adjust)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
