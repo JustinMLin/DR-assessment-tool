@@ -83,7 +83,7 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 
 ##### 2D Path Projection Plot #####
 
-plot_2d_projection = function(Z, path, cluster, id, slider) {
+plot_2d_projection = function(Z, path, cluster, id, slider, adjust) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
   
@@ -107,7 +107,8 @@ plot_2d_projection = function(Z, path, cluster, id, slider) {
   color[slider] = 2
     
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+      geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+      geom_density2d(aes(x=x, y=y), adjust = adjust, alpha = .8) +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
