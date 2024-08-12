@@ -107,8 +107,8 @@ plot_2d_projection = function(Z, path, cluster, id, slider, adjust) {
   color[slider] = 2
     
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-      geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
-      geom_density2d(aes(x=x, y=y), adjust = adjust, alpha = .8) +
+    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.8)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
@@ -120,7 +120,7 @@ plot_2d_projection = function(Z, path, cluster, id, slider, adjust) {
   list(p=p, var_explained=var_explained)
 }
 
-plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, slider) {
+plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, slider, adjust) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
   
@@ -142,6 +142,7 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, slider) {
   
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
     geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.8)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
