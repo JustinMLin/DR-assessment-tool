@@ -36,7 +36,10 @@ add_path = function(plot, df, path, slider = 0) {
 ##### Medoid MST Plot #####
 
 get_subtree = function(tree, points) {
-  vertices = unique(unlist(all_simple_paths(tree, from = points[1], to = points[-1], mode = "out")))
+  vertices = ifelse(length(points) == 1,
+                    points,
+                    unique(unlist(all_simple_paths(tree, from = points[1], to = points[-1], mode = "out"))))
+    
   induced_subgraph(tree, vertices)
 }
 
@@ -74,10 +77,12 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 
   n = length(edge_matrix[,1])
 
-  for (i in 1:n) {
-    plot = plot + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
+  if (n > 0) {
+    for (i in 1:n) {
+      plot = plot + geom_path(data = df[as.numeric(edge_matrix[i,]),], color = "black")
+    }
   }
-
+  
   plot
 }
 
@@ -108,7 +113,7 @@ plot_2d_projection = function(Z, path, cluster, id, slider, adjust) {
 
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
     geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
-    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.6)} +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.5)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
@@ -142,7 +147,7 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, slider, adjust
 
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
     geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
-    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.6)} +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.5)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],

@@ -1,0 +1,114 @@
+---
+title: "PCA Path Experiments"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dslabs)
+library(umap)
+library(dplyr)
+
+source("DR tool functions final.R")
+```
+
+```{r}
+library(reticulate)
+use_python("/opt/anaconda3/envs/skenv/bin/python")
+py_config()
+py_available()
+```
+
+```{r}
+set.seed(2618)
+
+n = 2000
+p = 300
+
+data = read_mnist()$train
+subsample = sample(1:nrow(data$images), n)
+
+Z = data$images[subsample,]
+real_labels = data$labels[subsample]
+
+id = subsample
+Z_pca = unname(prcomp(Z, rank. = p)$x)
+
+Z_dist = dist(Z_pca, method="manhattan")
+X = umap(Z_pca, method="umap-learn", n_neighbors=30)$layout
+
+kmeans_cluster = kmeans(Z_pca, centers=10, iter.max=100, nstart=20)$cluster
+
+tree = get_mst(Z_dist)
+```
+
+```{r}
+sp = get_shortest_path(tree, which(id == 20887), which(id == 6368))
+
+keep = kmeans_cluster == 7 & X[,1] < 4
+
+X_new = X[keep,]
+df = data.frame(x = X_new[,1], y = X_new[,2])
+ggplot(df, aes(x=x, y=y, color=y)) +
+  geom_point() +
+  scale_color_viridis_c() +
+  geom_segment(data=df[match(path_ids, which(keep)),],
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3,
+               color="black")
+```
+
+```{r}
+path_ids = as.numeric(sp$vpath)
+path_pts = Z_pca[path_ids,]
+pca = prcomp(path_pts, rank.=2)
+Z_new = Z_pca[keep,]
+projected_pts = predict(pca, newdata=Z_new)
+
+df1 = data.frame(x=projected_pts[,1],
+                 y=projected_pts[,2],
+                 col=X_new[,2])
+
+df_path = data.frame(x=projected_pts[match(path_ids, which(keep)),1],
+                     y=projected_pts[match(path_ids, which(keep)),2])
+
+ggplot(df1, aes(x=x, y=y)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_path,
+                 aes(xend=lead(x), yend=lead(y)),
+                 linewidth=0.3)
+```
+
+```{r}
+pca_full = prcomp(Z_new, rank.=2)
+df2 = data.frame(x=-pca_full$x[,1],
+                 y=-pca_full$x[,2],
+                 col=X_new[,2])
+
+df_pca = data.frame(x=-pca_full$x[match(path_ids, which(keep)),1],
+                    y=-pca_full$x[match(path_ids, which(keep)),2])
+
+ggplot(df2, aes(x=x, y=y)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_pca,
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3)
+```
+
+```{r}
+umap_full = umap(Z_new, method="umap-learn", n_neighbors=15)
+df3 = data.frame(x=-umap_full$layout[,1],
+                 y=umap_full$layout[,2],
+                 col=X_new[,2])
+
+ggplot(df3, aes(x=x, y=y, color=col)) +
+  geom_point() +
+  scale_color_viridis_c()
+```
+
