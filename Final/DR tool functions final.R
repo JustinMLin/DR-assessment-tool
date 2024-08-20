@@ -36,9 +36,7 @@ add_path = function(plot, df, path, slider = 0) {
 ##### Medoid MST Plot #####
 
 get_subtree = function(tree, points) {
-  vertices = ifelse(length(points) == 1,
-                    points,
-                    unique(unlist(all_simple_paths(tree, from = points[1], to = points[-1], mode = "out"))))
+  vertices = if (length(points) == 1) points else unique(unlist(all_simple_paths(tree, from = points[1], to = points[-1], mode = "out")))
     
   induced_subgraph(tree, vertices)
 }

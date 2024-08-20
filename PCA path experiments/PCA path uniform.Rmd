@@ -1,0 +1,54 @@
+---
+title: "PCA Path Experiments"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(umap)
+
+source("print mst.R")
+source("uniform on ellipsoids.R")
+source("../Final/DR tool final.R")
+```
+
+```{r}
+library(reticulate)
+use_python("/opt/anaconda3/envs/skenv/bin/python")
+py_config()
+py_available()
+```
+
+
+```{r}
+X1 = runif_ellipse(200, c(0,0), matrix(c(1,0,1,1), nrow=2))
+X2 = rbind(X1, runif_ellipse(200, c(3,0), matrix(c(1,0,-1,1), nrow=2)))
+
+mst1 = get_mst(dist(X1))
+mst2 = get_mst(dist(X2))
+
+print_mst(X1, mst1)
+print_mst(X2, mst2, cluster=c(rep(1,200), rep(2,200)))
+```
+
+```{r}
+n1 = 30
+n2 = 20
+
+Z1 = runif_ellipse(n1, rep(0, 100), diag(c(8, 5, rep(2, 98))))
+Z2 = rbind(Z1, runif_ellipse(n2, c(-4, rep(0, 99)), diag(c(3, 2, rep(1, 98)))))
+cluster = c(rep(1,n1), rep(2,n2))
+
+mst1 = get_mst(dist(Z1))
+mst2 = get_mst(dist(Z2))
+
+X = umap(Z2, method="umap-learn", n_neighbors=15)$layout
+print_mst(X, mst2, cluster=cluster)
+```
+
+```{r}
+run_app(Z2, X, cluster)
+```

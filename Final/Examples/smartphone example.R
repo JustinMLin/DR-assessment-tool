@@ -6,11 +6,11 @@ library(dplyr)
 
 source("~/Desktop/Research/DR-assessment-tool/Final/DR tool final.R")
 
-use_python("/Users/justinlin/anaconda3/bin/python")
+use_python("/opt/anaconda3/envs/skenv/bin/python")
 py_config()
 py_available()
 
-data = read.csv('smartphone data/UCI HAR Dataset/clean_data.csv')
+data = read.csv('../../../smartphone data/UCI HAR Dataset/clean_data.csv')
 
 set.seed(2618)
 
@@ -35,10 +35,10 @@ p = data.frame(x=X[,1], y=X[,2], cluster=real_labels, id) %>%
 
 p
 
-run_app(Z_dist, X, real_labels, id)
+run_app(Z_pca, X, real_labels, id)
 
 #####################################
 
 kmeans_cluster = kmeans(Z_pca, centers=6, iter.max=100, nstart=20)$cluster
 
-run_app(Z_dist, X, kmeans_cluster, id)
+run_app(Z_pca, X, kmeans_cluster, id)

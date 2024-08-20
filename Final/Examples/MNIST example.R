@@ -27,7 +27,7 @@ Z_pca = unname(prcomp(Z, rank. = p)$x)
 Z_dist = dist(Z_pca, method="manhattan")
 X = umap(Z_pca, method="umap-learn", n_neighbors=30)$layout
 
-#run_app(Z_dist, X, real_labels, id)
+#run_app(Z_pca, X, real_labels, id)
 
 p = data.frame(x=X[,1], y=X[,2], cluster=factor(real_labels, levels=c(1,5,4,8,7,2,0,9,6,3)), id) %>%
   ggplot(aes(x=x, y=y, color=factor(cluster))) +
@@ -41,7 +41,7 @@ p
 
 kmeans_cluster = kmeans(Z_pca, centers=10, iter.max=100, nstart=20)$cluster
 
-run_app(Z_dist, X, kmeans_cluster, id)
+run_app(Z_pca, X, kmeans_cluster, id)
 
 q = data.frame(x=X[,1], y=X[,2], cluster=kmeans_cluster, id) %>%
   ggplot(aes(x=x, y=y, color=factor(cluster))) +

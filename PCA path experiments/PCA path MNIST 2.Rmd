@@ -13,7 +13,7 @@ library(dslabs)
 library(umap)
 library(dplyr)
 
-source("DR tool functions final.R")
+source("../Final/DR tool functions final.R")
 ```
 
 ```{r}
@@ -49,6 +49,9 @@ tree = get_mst(Z_dist)
 ```{r}
 sp = get_shortest_path(tree, which(id == 20887), which(id == 6368))
 
+path_ids = as.numeric(sp$vpath)
+path_pts = Z_pca[path_ids,]
+
 keep = kmeans_cluster == 7 & X[,1] < 4
 
 X_new = X[keep,]
@@ -63,9 +66,9 @@ ggplot(df, aes(x=x, y=y, color=y)) +
 ```
 
 ```{r}
-path_ids = as.numeric(sp$vpath)
-path_pts = Z_pca[path_ids,]
 pca = prcomp(path_pts, rank.=2)
+sum(pca$sdev[1:2]^2)/sum(pca$sdev^2)
+
 Z_new = Z_pca[keep,]
 projected_pts = predict(pca, newdata=Z_new)
 
@@ -85,20 +88,34 @@ ggplot(df1, aes(x=x, y=y)) +
 ```
 
 ```{r}
-pca_full = prcomp(Z_new, rank.=2)
-df2 = data.frame(x=-pca_full$x[,1],
-                 y=-pca_full$x[,2],
-                 col=X_new[,2])
+pca_full = prcomp(Z_new, rank.=3)
+sum(pca_full$sdev[1:2]^2)/sum(pca_full$sdev^2)
+sum(pca_full$sdev[1:3]^2)/sum(pca_full$sdev^2)
 
-df_pca = data.frame(x=-pca_full$x[match(path_ids, which(keep)),1],
-                    y=-pca_full$x[match(path_ids, which(keep)),2])
+df2 = data.frame(x=pca_full$x[,1],
+                 y=pca_full$x[,2],
+                 z=pca_full$x[,3],
+                 col=X_new[,1]*X_new[,2])
 
-ggplot(df2, aes(x=x, y=y)) +
+df_pca = data.frame(x=pca_full$x[match(path_ids, which(keep)),1],
+                    y=pca_full$x[match(path_ids, which(keep)),2],
+                    z=pca_full$x[match(path_ids, which(keep)),3])
+
+ggplot(df2, aes(x=x, y=-y)) +
   geom_point(aes(color=col)) +
   scale_color_viridis_c() +
   geom_segment(data=df_pca,
-               aes(xend=lead(x), yend=lead(y)),
-               linewidth=0.3)
+               aes(xend=lead(x), yend=lead(-y)),
+               linewidth=0.3) +
+  labs(x="PC1", y="PC2")
+
+ggplot(df2, aes(x=-x, y=z)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_pca,
+               aes(xend=lead(-x), yend=lead(z)),
+               linewidth=0.3) +
+  labs(x="PC1", y="PC3")
 ```
 
 ```{r}
@@ -107,8 +124,14 @@ df3 = data.frame(x=-umap_full$layout[,1],
                  y=umap_full$layout[,2],
                  col=X_new[,2])
 
-ggplot(df3, aes(x=x, y=y, color=col)) +
-  geom_point() +
-  scale_color_viridis_c()
+df_umap = data.frame(x=-umap_full$layout[match(path_ids, which(keep)),1],
+                     y=umap_full$layout[match(path_ids, which(keep)),2])
+
+ggplot(df3, aes(x=x, y=y)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_umap,
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3)
 ```
 
