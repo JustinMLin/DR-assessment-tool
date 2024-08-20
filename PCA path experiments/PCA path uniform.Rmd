@@ -35,20 +35,20 @@ print_mst(X2, mst2, cluster=c(rep(1,200), rep(2,200)))
 ```
 
 ```{r}
-n1 = 30
-n2 = 20
+n1 = 1000
+n2 = 1000
 
 Z1 = runif_ellipse(n1, rep(0, 100), diag(c(8, 5, rep(2, 98))))
-Z2 = rbind(Z1, runif_ellipse(n2, c(-4, rep(0, 99)), diag(c(3, 2, rep(1, 98)))))
+Z2 = rbind(Z1, runif_ellipse(n2, c(-3, rep(0, 99)), diag(c(8, 5, rep(2, 98)))))
 cluster = c(rep(1,n1), rep(2,n2))
 
 mst1 = get_mst(dist(Z1))
 mst2 = get_mst(dist(Z2))
 
-X = umap(Z2, method="umap-learn", n_neighbors=15)$layout
-print_mst(X, mst2, cluster=cluster)
-```
+X1 = umap(Z1, method="umap-learn", n_neighbors=15)$layout
+X2 = umap(Z2, method="umap-learn", n_neighbors=15)$layout
+print_mst(X2, mst2, cluster=cluster)
 
-```{r}
-run_app(Z2, X, cluster)
+# run_app(Z1, X1, cluster[1:n1])
+# run_app(Z2, X2, cluster)
 ```

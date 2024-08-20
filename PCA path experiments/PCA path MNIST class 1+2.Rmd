@@ -58,27 +58,40 @@ X1 = umap(Z1_pca, method="umap-learn", n_neighbors=30)$layout
 id1 = id[keep]
 cluster1 = kmeans_cluster[keep]
 
+sp = get_shortest_path(tree, which(id == 51188), which(id == 53349))
+
+path_ids = as.numeric(sp$vpath)
+path_pts = Z_pca[path_ids,]
+
 # run_app(Z1, X1, cluster1, id1)
 ```
 
 ```{r}
-pca1 = prcomp(Z1, rank. = 3)
+b = 30
 
-df = data.frame(PC1 = pca1$x[,1],
-                PC2 = pca1$x[,2],
-                PC3 = pca1$x[,3])
+for (i in 1:b) {
+  u = matrix(rnorm(p), ncol=1)
+  u = u/norm(u, type='2')
 
-ggplot(df, aes(x=PC1, y=PC2, color=factor(cluster1))) +
-  geom_point()
+  v = matrix(rnorm(p), ncol=1)
+  v = v/norm(v, type='2')
 
-ggplot(df, aes(x=PC1, y=PC3, color=factor(cluster1))) +
-  geom_point()
-```
+  w = v - as.numeric(t(v) %*% v) * u
 
-```{r}
-tree1 = get_mst(dist(Z1, method="manhattan"))
-
-print_mst(pca1$x[,c(1,2)], tree1, cluster1)
-
-# run_app(Z1, pca1$x[,c(1,2)], cluster1, id1)
+  R = matrix(c(v,w), ncol=2)
+  
+  X_rot = Z1_pca %*% R
+  
+  df_rot = data.frame(x=X_rot[,1], y=X_rot[,2], cluster=cluster1)
+  
+  df_path = data.frame(x=X_rot[match(path_ids, which(keep)),1],
+                       y=X_rot[match(path_ids, which(keep)),2])
+  
+  print(ggplot(df_rot, aes(x=x, y=y)) +
+    geom_point() +
+    scale_color_viridis_c() +
+    geom_segment(data=df_path,
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3))
+}
 ```

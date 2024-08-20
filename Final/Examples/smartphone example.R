@@ -4,7 +4,7 @@ library(reticulate)
 library(dbscan)
 library(dplyr)
 
-source("~/Desktop/Research/DR-assessment-tool/Final/DR tool final.R")
+source("../../../DR-assessment-tool/Final/DR tool final.R")
 
 use_python("/opt/anaconda3/envs/skenv/bin/python")
 py_config()
@@ -35,10 +35,10 @@ p = data.frame(x=X[,1], y=X[,2], cluster=real_labels, id) %>%
 
 p
 
-run_app(Z_pca, X, real_labels, id)
+# run_app(Z_pca, X, real_labels, id)
 
 #####################################
 
 kmeans_cluster = kmeans(Z_pca, centers=6, iter.max=100, nstart=20)$cluster
 
-run_app(Z_pca, X, kmeans_cluster, id)
+# run_app(Z_pca, X, kmeans_cluster, id)

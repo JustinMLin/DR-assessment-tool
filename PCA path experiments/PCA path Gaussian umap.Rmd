@@ -1,0 +1,107 @@
+---
+title: "PCA Path Experiments"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(umap)
+library(MASS)
+
+source("../Final/DR tool final.R")
+```
+
+```{r}
+library(reticulate)
+use_python("/opt/anaconda3/envs/skenv/bin/python")
+py_config()
+py_available()
+```
+
+
+```{r}
+set.seed(27163)
+
+n=250
+dim = 50
+vars = sapply(1:dim, function(x) 1/x)
+
+Z = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(vars))
+X = umap(Z, method="umap-learn", n_neighbors=15, min_dist=0.1)$layout
+
+mst = get_mst(dist(Z))
+
+# run_app(Z, X, rep(1, n))
+```
+
+```{r}
+df = data.frame(x=X[,1], y=X[,2], col=Z[,1])
+
+ggplot(df, aes(x=x, y=y, color=col)) +
+  geom_point() +
+  scale_color_viridis_c()
+```
+
+```{r}
+sp = get_shortest_path(mst, 76, 189)
+
+path_ids = as.numeric(sp$vpath)
+path_pts = Z[path_ids,]
+
+pca = prcomp(path_pts, rank.=2)
+projected_pts = predict(pca, newdata=Z)
+
+df1 = data.frame(x=projected_pts[,1],
+                 y=projected_pts[,2],
+                 col=Z[,1])
+
+df_path = data.frame(x=projected_pts[path_ids,1],
+                     y=projected_pts[path_ids,2])
+
+ggplot(df1, aes(x=-x, y=y)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_path,
+                 aes(xend=lead(-x), yend=lead(y)),
+                 linewidth=0.3)
+```
+
+```{r}
+pca_full = prcomp(Z, rank.=3)
+
+df2 = data.frame(x=pca_full$x[,1],
+                 y=pca_full$x[,2],
+                 z=pca_full$x[,3],
+                 col=Z[,1])
+
+df_pca = data.frame(x=pca_full$x[path_ids,1],
+                    y=pca_full$x[path_ids,2],
+                    z=pca_full$x[path_ids,3])
+
+ggplot(df2, aes(x=x, y=-y)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_pca,
+                 aes(xend=lead(x), yend=lead(-y)),
+                 linewidth=0.3) +
+  labs(x="PC1", y="PC2")
+
+ggplot(df2, aes(x=x, y=z)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_pca,
+               aes(xend=lead(x), yend=lead(z)),
+               linewidth=0.3) +
+  labs(x="PC1", y="PC3")
+
+ggplot(df2, aes(x=y, y=z)) +
+  geom_point(aes(color=col)) +
+  scale_color_viridis_c() +
+  geom_segment(data=df_pca,
+               aes(xend=lead(y), yend=lead(z)),
+               linewidth=0.3) +
+  labs(x="PC2", y="PC3")
+```
