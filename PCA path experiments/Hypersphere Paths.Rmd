@@ -1,0 +1,178 @@
+---
+title: "Hypersphere Paths"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(ggplot2)
+library(dplyr)
+library(stats)
+
+source("../Final/DR tool functions final.R")
+source("uniform on ellipsoids.R")
+```
+
+```{r}
+plot_path = function(Z, path) {
+  path_pts = Z[path$vpath,]
+  pca = prcomp(path_pts, scale.=TRUE, rank.=2)
+  
+  X = predict(pca, Z)
+  
+  df = data.frame(x=X[,1], y=X[,2])
+  
+  ggplot(df, aes(x=x, y=y)) +
+    geom_point() +
+    geom_segment(data=df[path$vpath,],
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3,
+               color="black")
+}
+
+avg_eigen = function(Z, path) {
+  path_pts = Z[path$vpath,]
+  pca = prcomp(path_pts)
+  
+  X = predict(pca, Z)
+  
+  mean(round(eigen(cov(X))$values, 3))
+}
+
+pctl = function(value, vector){
+  sum(value >= vector)/length(vector)
+}
+
+angle = function(a, b) {
+  acos(sum(a*b) / (sqrt(sum(a*a)) * sqrt(sum(b*b)))) * 180 / pi
+}
+
+orth_proj = function(x, R) {
+  c = solve(t(R) %*% R, t(R) %*% x)
+  R %*% c
+}
+```
+
+
+```{r}
+b = 30
+dim = c(5, 10, 20, 50, 100, 500)
+n = 200
+theta = pi/4
+
+res_gaus = matrix(nrow=length(dim), ncol=b)
+res_sphere = matrix(nrow=length(dim), ncol=b)
+avg_eigenvalues = vector(length=b)
+og_eigenvalues = vector(length=b)
+for (i in 1:length(dim)) {
+  for (j in 1:b) {
+    data_gaus = matrix(nrow=n+2, ncol=dim[i])
+    data_sphere = matrix(nrow=n+2, ncol=dim[i])
+    
+    edge = sqrt(qchisq(pnorm(0.5), df=dim[i]))
+    data_gaus[1:n,] = mvrnorm(n=n, mu=rep(0, dim[i]), Sigma=diag(rep(1, dim[i])))
+    data_gaus[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim[i]-2))
+    data_gaus[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim[i]-2))
+    
+    data_sphere[1:n,] = runif_disk(n=n, center=rep(0,dim[i]), radius=3)
+    data_sphere[n+1,] = c(3*cos(theta), 3*sin(theta), rep(0, dim[i]-2))
+    data_sphere[n+2,] = c(-3*cos(theta), 3*sin(theta), rep(0, dim[i]-2))
+    
+    mst_gaus = get_mst(dist(data_gaus))
+    mst_sphere = get_mst(dist(data_sphere))
+    
+    sp_gaus = get_shortest_path(mst_gaus, n+1, n+2)
+    sp_sphere = get_shortest_path(mst_sphere, n+1, n+2)
+    
+    path_pts_gaus = data_gaus[sp_gaus$vpath,]
+    all_norms_gaus = apply(data_gaus, 1, function(x) norm(x, type='2'))
+    path_pt_norms_gaus = all_norms_gaus[sp_gaus$vpath]
+    res_gaus[i,j] = pctl(mean(path_pt_norms_gaus), all_norms_gaus)
+    
+    path_pts_sphere = data_sphere[sp_sphere$vpath,]
+    all_norms_sphere = apply(data_sphere, 1, function(x) norm(x, type='2'))
+    path_pt_norms_sphere = all_norms_sphere[sp_sphere$vpath]
+    res_sphere[i,j] = pctl(mean(path_pt_norms_sphere), all_norms_sphere)
+    
+    if (i == length(dim)) {
+      print(plot_path(data_gaus, sp_gaus))
+      avg_eigenvalues[j] = avg_eigen(data_gaus, sp_gaus)
+      og_eigenvalues[j] = mean(round(eigen(cov(data_gaus))$values, 3))
+    }
+  }
+}
+```
+
+```{r}
+df = data.frame(dim=rep(dim, b), percentile=c(res_gaus))
+
+ggplot(df, aes(x=dim, y=percentile, color=factor(dim))) +
+  geom_boxplot() + 
+  scale_x_log10()
+
+df1 = data.frame(dim=rep(dim, b), percentile=c(res_sphere))
+
+ggplot(df1, aes(x=dim, y=percentile, color=factor(dim))) +
+  geom_boxplot() + 
+  scale_x_log10()
+```
+
+```{r}
+n = 200
+dim = 500
+theta = pi/6
+
+Z = matrix(nrow=n+2, ncol=dim)
+edge = sqrt(qchisq(pnorm(1), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+Z[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+Z[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+
+Z = Z %*% diag(c(1,1,4,2,rep(1, dim-4)))
+Z = scale(Z, center=TRUE, scale=FALSE)
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, n+1, n+2)
+
+path_pts = Z[sp$vpath,]
+pca_path = prcomp(path_pts, rank.=2)
+
+pca = prcomp(Z, rank.=2)
+
+df_path = data.frame(x=predict(pca_path, Z)[,1], y=predict(pca_path, Z)[,2])
+  
+ggplot(df_path, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df_path[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+
+df = data.frame(x=predict(pca, Z)[,1], y=predict(pca, Z)[,2])
+  
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+
+biplot(pca_path)
+```
+
+```{r}
+all_angles = sapply(1:n, function(i) angle(orth_proj(Z[i,], pca_path$rotation), Z[i,]))
+all_norms = apply(Z, 1, function(x) norm(x, type='2'))
+
+hist(all_angles)
+hist(all_norms)
+
+path_angles = sapply(sp$vpath, function(i) angle(orth_proj(Z[i,], pca_path$rotation), Z[i,]))
+
+sapply(1:length(path_angles), function(i) pctl(path_angles[i], all_angles))
+```
+

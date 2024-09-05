@@ -13,6 +13,7 @@ library(umap)
 source("print mst.R")
 source("uniform on ellipsoids.R")
 source("../Final/DR tool final.R")
+#source("../Experimental/DR tool final experimental.R")
 ```
 
 ```{r}
@@ -39,7 +40,7 @@ n1 = 1000
 n2 = 1000
 
 Z1 = runif_ellipse(n1, rep(0, 100), diag(c(8, 5, rep(2, 98))))
-Z2 = rbind(Z1, runif_ellipse(n2, c(-3, rep(0, 99)), diag(c(8, 5, rep(2, 98)))))
+Z2 = rbind(Z1, runif_ellipse(n2, c(-7, rep(0, 99)), diag(c(8, 5, rep(2, 98)))))
 cluster = c(rep(1,n1), rep(2,n2))
 
 mst1 = get_mst(dist(Z1))
@@ -50,5 +51,5 @@ X2 = umap(Z2, method="umap-learn", n_neighbors=15)$layout
 print_mst(X2, mst2, cluster=cluster)
 
 # run_app(Z1, X1, cluster[1:n1])
-# run_app(Z2, X2, cluster)
+run_app(Z2, X2, cluster)
 ```

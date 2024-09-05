@@ -1,0 +1,57 @@
+---
+title: "Alternate Projections"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(gridExtra)
+
+source("../Final/DR tool functions final.R")
+source("alternate projections.R")
+
+set.seed(10403)
+```
+
+```{r}
+n = 2000
+dim = 500
+theta = pi/4
+
+Z = matrix(nrow=n+2, ncol=dim)
+edge = sqrt(qchisq(pnorm(2), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+Z[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+Z[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+
+Z = Z %*% diag(c(1,1,4,2,rep(1, dim-4)))
+
+color = apply(Z, 1, function(x) norm(x, type='2'))
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, n+1, n+2)
+```
+
+```{r, fig.width=8, fig.height=8}
+p1 = plot_path(Z, sp$vpath, scale=FALSE, color)
+p2 = plot_path_kpca(Z, sp$vpath, 0.001, color)
+p3 = plot_path_rcca(Z, sp$vpath, 2, 0.1, 0, color)
+p4 = plot_path_rcca(Z, sp$vpath, 6, 0.1, 0, color)
+grid.arrange(p1, p2, p3, p4, nrow=2)
+```
+
+```{r}
+plot_path_pca_rcca(X, 
+                   sp$vpath, 
+                   degree=6, 
+                   dimension=20, 
+                   lambda1=0.1, lambda2=0,
+                   scale=FALSE,
+                   color=color)
+```
+
+

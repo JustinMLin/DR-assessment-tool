@@ -15,6 +15,7 @@ library(dplyr)
 
 source("../Final/DR tool final.R")
 source("../Final/DR tool functions final.R")
+source("alternate projections.R")
 ```
 
 ```{r}
@@ -71,7 +72,7 @@ pca = prcomp(path_pts, rank.=2)
 sum(pca$sdev[1:2]^2)/sum(pca$sdev^2)
 
 Z_new = Z_pca[keep,]
-projected_pts = predict(pca, newdata=Z_new)
+projected_pts = predict(pca, scale.=TRUE, newdata=Z_new)
 
 df1 = data.frame(x=projected_pts[,1],
                  y=projected_pts[,2],
@@ -89,7 +90,7 @@ ggplot(df1, aes(x=x, y=y)) +
 ```
 
 ```{r}
-pca_full = prcomp(Z_new, rank.=3)
+pca_full = prcomp(Z_new, scale.=TRUE, rank.=3)
 df2 = data.frame(x=pca_full$x[,1],
                  y=pca_full$x[,2],
                  z=pca_full$x[,3],
@@ -131,5 +132,20 @@ ggplot(df3, aes(x=x, y=y)) +
   geom_segment(data=df_umap,
                aes(xend=lead(x), yend=lead(y)),
                linewidth=0.3)
+```
+
+```{r}
+plot_path_rcca(Z_new, 
+               vpath=match(path_ids, which(keep)), 
+               degree=6, 
+               lambda1=0.1, lambda2=0, 
+               color=X_new[,2])
+
+plot_path_pca_rcca(Z_new, 
+                   vpath=match(path_ids, which(keep)),
+                   dimension=50,
+                   degree=6, 
+                   lambda1=0.1, lambda2=0,
+                   color=X_new[,2])
 ```
 

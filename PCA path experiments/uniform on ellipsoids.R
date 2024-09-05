@@ -1,4 +1,4 @@
-runif_ball = function(n, center, radius) {
+runif_disk = function(n, center, radius) {
   m = length(center)
   
   sample = matrix(nrow=n, ncol=m)
@@ -13,7 +13,7 @@ runif_ball = function(n, center, radius) {
 runif_ellipse = function(n, center, Sigma) {
   m = length(center)
   
-  sample_ball = runif_ball(n, rep(0,m), 1)
+  sample_ball = runif_disk(n, rep(0,m), 1)
   sample = matrix(nrow=n, ncol=m)
   for (i in 1:n) {
     sample[i,] = sample_ball[i,] %*% Sigma + center

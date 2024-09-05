@@ -5,7 +5,7 @@ library(plotly)
 library(shinythemes)
 library(bslib)
 
-source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Final/DR tool functions final.R")
+source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Experimental/DR tool functions final experimental.R")
 
 run_app = function(Z, X, cluster, id=NULL) {
   Z_dist = unname(dist(Z))
@@ -32,14 +32,29 @@ run_app = function(Z, X, cluster, id=NULL) {
 
       layout_sidebar(
         sidebar=sidebar(
-          numericInput("from", "From ID", value = 0),
-          numericInput("to", "To ID", value = 0),
-          numericInput("adjust", "Bandwidth Adjustment", value = 0, step = .05),
-          uiOutput("slider"),
+          open="always",
+          accordion(
+            multiple=FALSE,
+            style="--bs-accordion-btn-bg: #f2f2f2",
+            accordion_panel(
+              "Path Selection",
+              style="background-color: #f2f2f2",
+              numericInput("from", "From ID", value = 0),
+              numericInput("to", "To ID", value = 0)
+            ),
+            accordion_panel(
+              "Path Projection Settings",
+              style="background-color: #f2f2f2",
+              numericInput("dim", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
+              sliderInput("degree", "CCA Degree", min=2, max=10, value=2, step=1),
+              sliderInput("adjust", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
+            )
+          ),
           radioButtons("med_subtree1",
                        label = "Show medoid subtree?",
                        choices = c("Hide", "Show"),
-                       inline = TRUE)
+                       inline = TRUE),
+          uiOutput("slider")
         ),
 
         card(
@@ -59,17 +74,44 @@ run_app = function(Z, X, cluster, id=NULL) {
       title="Custom Clusters",
       layout_sidebar(
         sidebar=sidebar(
-          actionButton("group1", "Submit Group 1"),
-          actionButton("group2", "Submit Group 2"),
-          actionButton("clear_brush", "Clear Groups"),
-          numericInput("from_brush", "From ID", value = 0),
-          numericInput("to_brush", "To ID", value = 0),
-          numericInput("adjust_brush", "Bandwidth Adjustment", value = 0, step = .05),
-          uiOutput("slider_brush"),
+          open="always",
+          accordion(
+            multiple=FALSE,
+            style="--bs-accordion-btn-bg: #f2f2f2",
+            accordion_panel(
+              "Group Selection",
+              style="background-color: #f2f2f2",
+              actionButton("group1", "Submit Group 1", 
+                           style="color: black;
+                                 background-color: white;
+                                 border-color: #dee2e6;
+                                 margin: 4px 0px"),
+              actionButton("group2", "Submit Group 2",
+                           style="color: black;
+                                 background-color: white;
+                                 border-color: #dee2e6;
+                                 margin: 4px 0px"),
+              actionButton("clear_brush", "Clear Groups",
+                           style="color: black;
+                                 background-color: white;
+                                 border-color: #dee2e6;
+                                 margin: 4px 0px"),
+              numericInput("from_brush", "From ID", value = 0),
+              numericInput("to_brush", "To ID", value = 0)
+            ),
+            accordion_panel(
+              "Path Projection Settings",
+              style="background-color: #f2f2f2",
+              numericInput("dim_brush", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
+              sliderInput("degree_brush", "CCA Degree", min=2, max=10, value=2, step=1),
+              sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
+            )
+          ),
           radioButtons("med_subtree2",
                        label = "Show medoid subtree?",
                        choices = c("Hide", "Show"),
-                       inline = TRUE)
+                       inline = TRUE),
+          uiOutput("slider_brush")
         ),
 
         card(
@@ -135,7 +177,7 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty())
       }
       
-      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$slider, input$adjust)
+      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
@@ -259,7 +301,9 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty())
       }
 
-      ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, cluster, id, input$slider_brush, input$adjust_brush)
+      ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, 
+                                     cluster, id, input$dim_brush, input$degree_brush, 
+                                     input$slider_brush, input$adjust_brush)
 
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
