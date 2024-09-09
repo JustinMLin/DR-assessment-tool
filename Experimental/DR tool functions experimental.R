@@ -1,4 +1,5 @@
 library(igraph)
+library(dplyr)
 library(scales)
 library(ggplot2)
 library(usedist)
@@ -110,7 +111,10 @@ plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust)
     ref_mat[,i] = (1:length(path$vpath))^i
   }
   
-  cc1 = rcc(X[1:length(path_ids),], ref_mat, 0.1, 0)
+  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
+                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
+                       plt=FALSE)$lambda1
+  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
   
   projected_pts = X %*% cc1$xcoef
 
@@ -120,8 +124,8 @@ plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust)
   color[slider] = 2
 
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
-    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.5)} +
+    geom_point(aes(color=factor(cols)), size=0.7) +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
     labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
@@ -133,7 +137,7 @@ plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust)
   list(p=p, var_explained=var_explained)
 }
 
-plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, slider, adjust) {
+plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, slider, adjust, color_choice) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
 
@@ -142,7 +146,25 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
 
   ids = unique(c(path_ids, g1, g2))
   pts = Z[ids,]
-  cols = cluster[ids]
+  
+  if (color_choice == "Original Coloring") {
+    cols = cluster[ids]
+  }
+  else if (color_choice == "Group Coloring") {
+    group_path_ids = match(path_ids, ids)
+    g1_ids = match(g1, ids)
+    g2_ids = match(g2, ids)
+    
+    cols = sapply(1:length(ids), function(i) {
+      case_when(
+        i %in% group_path_ids ~ "Path Point",
+        i %in% g1_ids & !(i %in% g2_ids) ~ "Group 1",
+        i %in% g2_ids & !(i %in% g1_ids) ~ "Group 2",
+        i %in% g1_ids & i %in% g2_ids ~ "Group 1 and Group 2"
+      )
+    })
+    cols = factor(cols, levels=c("Path Point", "Group 1", "Group 2", "Group 1 and Group 2"))
+  }
 
   pca = prcomp(pts, rank.=dim)
   X = predict(pca, pts)
@@ -153,7 +175,10 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
     ref_mat[,i] = (1:length(path$vpath))^i
   }
   
-  cc1 = rcc(X[1:length(path_ids),], ref_mat, 0.1, 0)
+  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
+                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
+                       plt=FALSE)$lambda1
+  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
   
   projected_pts = X %*% cc1$xcoef
 
@@ -163,10 +188,12 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
   color[slider] = 2
   
   p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(x=x, y=y, color=factor(cols)), size=0.7) +
-    {if (adjust != 0) geom_density2d(aes(x=x, y=y), adjust=adjust, alpha=.5)} +
-    scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
-    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class") +
+    geom_point(aes(color=as.factor(cols)), size=0.7) +
+    {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
+    {if (color_choice == "Original Coloring") scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])} +
+    {if (color_choice == "Group Coloring") scale_color_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"),
+                                                              drop=FALSE)} +
+    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Color") +
     geom_segment(data=df[1:length(path_ids),],
                  aes(xend=lead(x), yend=lead(y)),
                  color = factor(color),

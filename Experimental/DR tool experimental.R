@@ -5,7 +5,7 @@ library(plotly)
 library(shinythemes)
 library(bslib)
 
-source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Experimental/DR tool functions final experimental.R")
+source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Experimental/DR tool functions experimental.R")
 
 run_app = function(Z, X, cluster, id=NULL) {
   Z_dist = unname(dist(Z))
@@ -104,7 +104,11 @@ run_app = function(Z, X, cluster, id=NULL) {
               style="background-color: #f2f2f2",
               numericInput("dim_brush", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
               sliderInput("degree_brush", "CCA Degree", min=2, max=10, value=2, step=1),
-              sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
+              sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05),
+              radioButtons("path_color_brush",
+                           label="Path Projection Coloring",
+                           choices=c("Original Coloring", "Group Coloring"),
+                           selected="Original Coloring")
             )
           ),
           radioButtons("med_subtree2",
@@ -174,7 +178,7 @@ run_app = function(Z, X, cluster, id=NULL) {
 
     output$projPath = renderPlotly({
       if (is.null(shortest_path())) {
-        return(plotly_empty())
+        return(plotly_empty(type="scatter", mode="markers"))
       }
       
       ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust)
@@ -191,7 +195,7 @@ run_app = function(Z, X, cluster, id=NULL) {
 
     output$pathWeights = renderPlot({
       if (is.null(shortest_path())) {
-        return(plotly_empty())
+        return(plotly_empty(type="bar"))
       }
 
       plot_path_weights(shortest_path(), input$slider, max_length)
@@ -217,14 +221,18 @@ run_app = function(Z, X, cluster, id=NULL) {
       d = event_data("plotly_selecting")
       rv$g1 = as.numeric(d$key)
 
-      updateNumericInput(inputId="from_brush", value=id[get_medoid(Z_dist, rv$g1)])
+      if (length(rv$g1) > 0) {
+        updateNumericInput(inputId="from_brush", value=id[get_medoid(Z_dist, rv$g1)])
+      } else rv$g1 = NULL
     })
 
     observeEvent(input$group2, {
       d = event_data("plotly_selecting")
       rv$g2 = as.numeric(d$key)
 
-      updateNumericInput(inputId="to_brush", value=id[get_medoid(Z_dist, rv$g2)])
+      if (length(rv$g2) > 0) {
+        updateNumericInput(inputId="to_brush", value=id[get_medoid(Z_dist, rv$g2)])
+      } else rv$g2 = NULL
     })
 
     observeEvent(input$clear_brush, {
@@ -271,7 +279,7 @@ run_app = function(Z, X, cluster, id=NULL) {
 
           ggplotly(p_brush,
                    tooltip = c("x", "y", "label")) %>%
-            layout(dragmode='select') %>%
+            layout(dragmode='lasso') %>%
             event_register("plotly_selecting")
         }
         else {
@@ -290,20 +298,21 @@ run_app = function(Z, X, cluster, id=NULL) {
 
           ggplotly(add_path(p_brush, plotting_df, shortest_path_brush(), input$slider_brush),
                    tooltip = c("x", "y", "label")) %>%
-            layout(dragmode='select') %>%
+            layout(dragmode='lasso') %>%
             event_register("plotly_selecting")
         }
       }
     })
 
     output$projPath_brush = renderPlotly({
-      if (is.null(rv$g1) | is.null (rv$g2)) {
-        return(plotly_empty())
+      if (is.null(shortest_path_brush())) {
+        return(plotly_empty(type="scatter", mode="markers"))
       }
 
       ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, 
                                      cluster, id, input$dim_brush, input$degree_brush, 
-                                     input$slider_brush, input$adjust_brush)
+                                     input$slider_brush, input$adjust_brush,
+                                     input$path_color_brush)
 
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
@@ -312,12 +321,12 @@ run_app = function(Z, X, cluster, id=NULL) {
                         xref='paper', yref='paper',
                         x=1, y=1,
                         showarrow = FALSE) %>%
-        layout(showlegend = FALSE)
+        {if (input$path_color_brush == "Original Coloring") layout(., showlegend = FALSE) else .}
     })
 
     output$pathWeights_brush = renderPlot({
       if (is.null(shortest_path_brush())) {
-        return(plotly_empty())
+        return(plotly_empty(type="bar"))
       }
 
       plot_path_weights(shortest_path_brush(), input$slider_brush, max_length)
