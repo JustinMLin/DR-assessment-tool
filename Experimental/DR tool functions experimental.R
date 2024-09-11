@@ -3,7 +3,8 @@ library(dplyr)
 library(scales)
 library(ggplot2)
 library(usedist)
-library(CCA)
+library(ade4)
+library(ggnetwork)
 
 ##### MST and Shortest Path Calculation #####
 
@@ -88,64 +89,59 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 
 ##### 2D Path Projection Plot #####
 
-plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust) {
+plot_2d_projection = function(Z, mst, path, order, cluster, id, slider, adjust) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-
+  
+  near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
+  path_subg = induced_subgraph(mst, vids=near_path_ids)
+  fr_layout = layout_with_fr(path_subg)
+  
+  out_pr = procuste(fr_layout, Z[near_path_ids,])
+  
+  X = Z %*% as.matrix(out_pr$loadY)
+  
   path_ids = as.numeric(path$vpath)
-  path_pts = Z[path_ids,]
-
   first_label = cluster[path_ids[1]]
   last_label = cluster[path_ids[length(path_ids)]]
-
   ids = unique(c(path_ids, which(cluster == first_label), which(cluster == last_label)))
-  pts = Z[ids,]
+  
+  projected_pts = X[ids,]
   cols = cluster[ids]
-
-  pca = prcomp(pts, rank.=dim)
-  X = predict(pca, pts)
-  var_explained = sum(pca$sdev[1:dim]^2)/sum(pca$sdev^2)
   
-  ref_mat = matrix(nrow=length(path$vpath), ncol=degree)
-  for (i in 1:degree) {
-    ref_mat[,i] = (1:length(path$vpath))^i
-  }
-  
-  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
-                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
-                       plt=FALSE)$lambda1
-  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
-  
-  projected_pts = X %*% cc1$xcoef
-
   df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
-
+  
   color = rep(1, length(path_ids))
   color[slider] = 2
-
-  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
+  
+  p = ggplot(df, aes(x=x, y=y, label=id)) +
     geom_point(aes(color=factor(cols)), size=0.7) +
     {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
-    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class") +
+    labs(title=paste0("Order = ", order), x="", y="", color="Class") +
     geom_segment(data=df[1:length(path_ids),],
                  aes(xend=lead(x), yend=lead(y)),
                  color = factor(color),
                  linewidth=0.3)
-
-  # ggplotly doesn't translate geom_text, add annotation later
-  list(p=p, var_explained=var_explained)
+  
+    list(p=p, var_explained=0)
 }
 
-plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, slider, adjust, color_choice) {
-  # convert cluster to standard form
+plot_2d_projection_brush = function(Z, mst, path, order, g1, g2, cluster, id, slider, adjust, color_choice) {
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
+  
+  near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
+  path_subg = induced_subgraph(mst, vids=near_path_ids)
+  fr_layout = layout_with_fr(path_subg)
+  
+  out_pr = procuste(fr_layout, Z[near_path_ids,])
+  
+  X = Z %*% as.matrix(out_pr$loadY)
 
   path_ids = as.numeric(path$vpath)
-  path_pts = Z[path_ids,]
-
   ids = unique(c(path_ids, g1, g2))
-  pts = Z[ids,]
+  
+  projected_pts = X[ids,]
   
   if (color_choice == "Original Coloring") {
     cols = cluster[ids]
@@ -166,41 +162,25 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
     cols = factor(cols, levels=c("Path Point", "Group 1", "Group 2", "Group 1 and Group 2"))
   }
 
-  pca = prcomp(pts, rank.=dim)
-  X = predict(pca, pts)
-  var_explained = sum(pca$sdev[1:dim]^2)/sum(pca$sdev^2)
-  
-  ref_mat = matrix(nrow=length(path$vpath), ncol=degree)
-  for (i in 1:degree) {
-    ref_mat[,i] = (1:length(path$vpath))^i
-  }
-  
-  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
-                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
-                       plt=FALSE)$lambda1
-  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
-  
-  projected_pts = X %*% cc1$xcoef
-
   df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
   
   color = rep(1, length(path_ids))
   color[slider] = 2
   
-  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
+  p = ggplot(df, aes(x=x, y=y, label=id)) +
     geom_point(aes(color=as.factor(cols)), size=0.7) +
     {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
     {if (color_choice == "Original Coloring") scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])} +
     {if (color_choice == "Group Coloring") scale_color_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"),
                                                               drop=FALSE)} +
-    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Color") +
+    labs(title=paste0("Order = ", order), x="", y="", color="Color") +
     geom_segment(data=df[1:length(path_ids),],
                  aes(xend=lead(x), yend=lead(y)),
                  color = factor(color),
                  linewidth=0.3)
 
   # ggplotly doesn't translate geom_text, add annotation later
-  list(p=p, var_explained=var_explained)
+  list(p=p, var_explained=0)
 }
 
 get_medoid = function(X_dist, g) {

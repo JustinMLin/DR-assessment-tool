@@ -45,8 +45,7 @@ run_app = function(Z, X, cluster, id=NULL) {
             accordion_panel(
               "Path Projection Settings",
               style="background-color: #f2f2f2",
-              numericInput("dim", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
-              sliderInput("degree", "CCA Degree", min=2, max=10, value=2, step=1),
+              sliderInput("order", "Nearest Neighbor Degree", min=0, max=10, value=0, step=1),
               sliderInput("adjust", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
             )
           ),
@@ -102,8 +101,7 @@ run_app = function(Z, X, cluster, id=NULL) {
             accordion_panel(
               "Path Projection Settings",
               style="background-color: #f2f2f2",
-              numericInput("dim_brush", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
-              sliderInput("degree_brush", "CCA Degree", min=2, max=10, value=2, step=1),
+              sliderInput("order_brush", "Nearest Neighbor Degree", min=0, max=10, value=0, step=1),
               sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05),
               radioButtons("path_color_brush",
                            label="Path Projection Coloring",
@@ -181,7 +179,7 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust)
+      ret = plot_2d_projection(Z, tree, shortest_path(), input$order, cluster, id, input$slider, input$adjust)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
@@ -309,9 +307,10 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
 
-      ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, 
-                                     cluster, id, input$dim_brush, input$degree_brush, 
-                                     input$slider_brush, input$adjust_brush,
+      ret = plot_2d_projection_brush(Z, tree, shortest_path_brush(), 
+                                     input$order_brush, rv$g1, rv$g2,
+                                     cluster, id, input$slider_brush,
+                                     input$adjust_brush, 
                                      input$path_color_brush)
 
       ggplotly(ret$p,

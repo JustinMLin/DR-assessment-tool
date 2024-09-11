@@ -201,6 +201,7 @@ Data is random and the Fruchterman-Reingold layout is random, so different value
 4 is one where PCA doesn't do well, PCA on the path doesn't work well, but the Procrustes rotation does work well.
 Sometimes when the procrustes rotation doesn't work well, redoing it so that the graph layout is a bit different leads to a better result.
 ```{r}
+set.seed(4)
 n = 200
 dim = 500
 set.seed(4)
