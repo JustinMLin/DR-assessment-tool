@@ -62,7 +62,7 @@ orth_proj = function(x, R) {
 b = 30
 dim = c(5, 10, 20, 50, 100, 500)
 n = 200
-theta = pi/4
+theta = pi/6
 
 res_gaus = matrix(nrow=length(dim), ncol=b)
 res_sphere = matrix(nrow=length(dim), ncol=b)
@@ -124,7 +124,7 @@ ggplot(df1, aes(x=dim, y=percentile, color=factor(dim))) +
 ```{r}
 n = 200
 dim = 500
-theta = pi/6
+theta = pi/4
 
 Z = matrix(nrow=n+2, ncol=dim)
 edge = sqrt(qchisq(pnorm(1), df=dim))
@@ -162,6 +162,87 @@ ggplot(df, aes(x=x, y=y)) +
              color="black")
 
 biplot(pca_path)
+```
+
+Make a function that uses procrustes analysis to find a projection such that the path + neighbors of the path nodes look the most like the Fruchterman-Reingold graph layout.
+```{r}
+library(ade4)
+library(ggnetwork)
+library(patchwork)
+rotate_to_subgraph <- function(mst, Z, order, full_tree = FALSE, sp) {
+    near_path = unique(unlist(neighborhood(mst, order = order, nodes = sp$vpath)))
+    node_type = rep("far", length(V(mst)))
+    node_type[near_path] = "near_path"
+    node_type[sp$vpath] = "on_path"
+    mst = set_vertex_attr(mst, "near_path", index = V(mst), node_type)
+    subg = induced_subgraph(mst, vids = near_path)
+    subgraph_edge_names = apply(as_edgelist(subg, names = TRUE), 1, paste, collapse = "-")
+    mst_edge_names = apply(as_edgelist(mst, names = TRUE), 1, paste, collapse = "-")
+    edge_near_path = ifelse(sapply(mst_edge_names, function(en) en %in% subgraph_edge_names),
+                            "near", "far")
+    mst = set_edge_attr(mst, "edge_near_path", index = E(mst), edge_near_path)
+
+    if(full_tree) {
+        fr_layout = layout_with_fr(mst)
+        out_pr = procuste(fr_layout, Z)
+    } else {
+        fr_layout = layout_with_fr(subg)
+        out_pr = procuste(fr_layout, Z[near_path,])
+    }
+
+    Z_pr = Z %*% as.matrix(out_pr$loadY)
+    return(list(tree = mst, subraph = subg, layout = Z_pr[,1:2]))
+}
+
+```
+
+Make Z be two clusters.
+Data is random and the Fruchterman-Reingold layout is random, so different values of the seed give better/worse results.
+4 is one where PCA doesn't do well, PCA on the path doesn't work well, but the Procrustes rotation does work well.
+Sometimes when the procrustes rotation doesn't work well, redoing it so that the graph layout is a bit different leads to a better result.
+```{r}
+n = 200
+dim = 500
+set.seed(4)
+Z = matrix(nrow=n, ncol=dim)
+edge = sqrt(qchisq(pnorm(1), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+## two clusters, separated only in the first dimension
+Z[1:(n/2),1] = Z[1:(n/2),1] + edge
+
+## make third and fourth dimensions bigger than cluster separation so PCA doesn't separate clusters
+Z = Z %*% diag(c(1,1,30,20,rep(1, dim-4)))
+Z = scale(Z, center=TRUE, scale=FALSE)
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, 1, n)
+
+
+path_pts = Z[sp$vpath,]
+pca_path = prcomp(path_pts, rank.=2)
+pca = prcomp(Z, rank.=2)
+
+df_path = data.frame(x=predict(pca_path, Z)[,1], y=predict(pca_path, Z)[,2])
+
+## projecting everything onto the path PCs
+p1 = ggplot(df_path, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df_path[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+## standard PCA with path points highlighted in red
+p2 = ggplot(data.frame(pca$x)) +
+    geom_point(aes(x = PC1, y = PC2)) +
+    geom_point(aes(x = PC1, y = PC2), color = 'red', data = data.frame(pca$x[sp$vpath,]))
+
+
+out = rotate_to_subgraph(mst, Z, order = 2, full_tree = FALSE, sp = sp)
+## project everything onto the plane that makes the path + neighbors look the most like the Fruchterman-Reingold layout
+p3 = ggplot(ggnetwork(out$tree, layout = out$layout)) +
+    geom_edges(aes(x = x, y = y, xend = xend, yend = yend, alpha = ifelse(edge_near_path == "far", 0, 1)), color = 'gray') +
+    geom_nodes(aes(x = x, y = y, color = near_path, alpha = ifelse(near_path == "on_path", 1, .2)))
+p1/p2/p3
 ```
 
 ```{r}
