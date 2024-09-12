@@ -164,6 +164,20 @@ ggplot(df, aes(x=x, y=y)) +
 biplot(pca_path)
 ```
 
+
+```{r}
+all_angles = sapply(1:n, function(i) angle(orth_proj(Z[i,], pca_path$rotation), Z[i,]))
+all_norms = apply(Z, 1, function(x) norm(x, type='2'))
+
+hist(all_angles)
+hist(all_norms)
+
+path_angles = sapply(sp$vpath, function(i) angle(orth_proj(Z[i,], pca_path$rotation), Z[i,]))
+
+sapply(1:length(path_angles), function(i) pctl(path_angles[i], all_angles))
+```
+
+
 Make a function that uses procrustes analysis to find a projection such that the path + neighbors of the path nodes look the most like the Fruchterman-Reingold graph layout.
 ```{r}
 library(ade4)
@@ -201,7 +215,6 @@ Data is random and the Fruchterman-Reingold layout is random, so different value
 4 is one where PCA doesn't do well, PCA on the path doesn't work well, but the Procrustes rotation does work well.
 Sometimes when the procrustes rotation doesn't work well, redoing it so that the graph layout is a bit different leads to a better result.
 ```{r}
-set.seed(4)
 n = 200
 dim = 500
 set.seed(4)
@@ -246,6 +259,173 @@ p3 = ggplot(ggnetwork(out$tree, layout = out$layout)) +
 p1/p2/p3
 ```
 
+---
+title: "Hypersphere Paths"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(MASS)
+library(ggplot2)
+library(dplyr)
+library(stats)
+
+source("../Final/DR tool functions final.R")
+source("uniform on ellipsoids.R")
+```
+
+```{r}
+plot_path = function(Z, path) {
+  path_pts = Z[path$vpath,]
+  pca = prcomp(path_pts, scale.=TRUE, rank.=2)
+  
+  X = predict(pca, Z)
+  
+  df = data.frame(x=X[,1], y=X[,2])
+  
+  ggplot(df, aes(x=x, y=y)) +
+    geom_point() +
+    geom_segment(data=df[path$vpath,],
+               aes(xend=lead(x), yend=lead(y)),
+               linewidth=0.3,
+               color="black")
+}
+
+avg_eigen = function(Z, path) {
+  path_pts = Z[path$vpath,]
+  pca = prcomp(path_pts)
+  
+  X = predict(pca, Z)
+  
+  mean(round(eigen(cov(X))$values, 3))
+}
+
+pctl = function(value, vector){
+  sum(value >= vector)/length(vector)
+}
+
+angle = function(a, b) {
+  acos(sum(a*b) / (sqrt(sum(a*a)) * sqrt(sum(b*b)))) * 180 / pi
+}
+
+orth_proj = function(x, R) {
+  c = solve(t(R) %*% R, t(R) %*% x)
+  R %*% c
+}
+```
+
+
+```{r}
+b = 30
+dim = c(5, 10, 20, 50, 100, 500)
+n = 200
+theta = pi/6
+
+res_gaus = matrix(nrow=length(dim), ncol=b)
+res_sphere = matrix(nrow=length(dim), ncol=b)
+avg_eigenvalues = vector(length=b)
+og_eigenvalues = vector(length=b)
+for (i in 1:length(dim)) {
+  for (j in 1:b) {
+    data_gaus = matrix(nrow=n+2, ncol=dim[i])
+    data_sphere = matrix(nrow=n+2, ncol=dim[i])
+    
+    edge = sqrt(qchisq(pnorm(0.5), df=dim[i]))
+    data_gaus[1:n,] = mvrnorm(n=n, mu=rep(0, dim[i]), Sigma=diag(rep(1, dim[i])))
+    data_gaus[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim[i]-2))
+    data_gaus[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim[i]-2))
+    
+    data_sphere[1:n,] = runif_disk(n=n, center=rep(0,dim[i]), radius=3)
+    data_sphere[n+1,] = c(3*cos(theta), 3*sin(theta), rep(0, dim[i]-2))
+    data_sphere[n+2,] = c(-3*cos(theta), 3*sin(theta), rep(0, dim[i]-2))
+    
+    mst_gaus = get_mst(dist(data_gaus))
+    mst_sphere = get_mst(dist(data_sphere))
+    
+    sp_gaus = get_shortest_path(mst_gaus, n+1, n+2)
+    sp_sphere = get_shortest_path(mst_sphere, n+1, n+2)
+    
+    path_pts_gaus = data_gaus[sp_gaus$vpath,]
+    all_norms_gaus = apply(data_gaus, 1, function(x) norm(x, type='2'))
+    path_pt_norms_gaus = all_norms_gaus[sp_gaus$vpath]
+    res_gaus[i,j] = pctl(mean(path_pt_norms_gaus), all_norms_gaus)
+    
+    path_pts_sphere = data_sphere[sp_sphere$vpath,]
+    all_norms_sphere = apply(data_sphere, 1, function(x) norm(x, type='2'))
+    path_pt_norms_sphere = all_norms_sphere[sp_sphere$vpath]
+    res_sphere[i,j] = pctl(mean(path_pt_norms_sphere), all_norms_sphere)
+    
+    if (i == length(dim)) {
+      print(plot_path(data_gaus, sp_gaus))
+      avg_eigenvalues[j] = avg_eigen(data_gaus, sp_gaus)
+      og_eigenvalues[j] = mean(round(eigen(cov(data_gaus))$values, 3))
+    }
+  }
+}
+```
+
+```{r}
+df = data.frame(dim=rep(dim, b), percentile=c(res_gaus))
+
+ggplot(df, aes(x=dim, y=percentile, color=factor(dim))) +
+  geom_boxplot() + 
+  scale_x_log10()
+
+df1 = data.frame(dim=rep(dim, b), percentile=c(res_sphere))
+
+ggplot(df1, aes(x=dim, y=percentile, color=factor(dim))) +
+  geom_boxplot() + 
+  scale_x_log10()
+```
+
+```{r}
+n = 200
+dim = 500
+theta = pi/4
+
+Z = matrix(nrow=n+2, ncol=dim)
+edge = sqrt(qchisq(pnorm(1), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+Z[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+Z[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+
+Z = Z %*% diag(c(1,1,4,2,rep(1, dim-4)))
+Z = scale(Z, center=TRUE, scale=FALSE)
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, n+1, n+2)
+
+path_pts = Z[sp$vpath,]
+pca_path = prcomp(path_pts, rank.=2)
+
+pca = prcomp(Z, rank.=2)
+
+df_path = data.frame(x=predict(pca_path, Z)[,1], y=predict(pca_path, Z)[,2])
+  
+ggplot(df_path, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df_path[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+
+df = data.frame(x=predict(pca, Z)[,1], y=predict(pca, Z)[,2])
+  
+ggplot(df, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+
+biplot(pca_path)
+```
+
+
 ```{r}
 all_angles = sapply(1:n, function(i) angle(orth_proj(Z[i,], pca_path$rotation), Z[i,]))
 all_norms = apply(Z, 1, function(x) norm(x, type='2'))
@@ -258,3 +438,128 @@ path_angles = sapply(sp$vpath, function(i) angle(orth_proj(Z[i,], pca_path$rotat
 sapply(1:length(path_angles), function(i) pctl(path_angles[i], all_angles))
 ```
 
+
+Make a function that uses procrustes analysis to find a projection such that the path + neighbors of the path nodes look the most like the Fruchterman-Reingold graph layout.
+```{r}
+library(ade4)
+library(ggnetwork)
+library(patchwork)
+rotate_to_subgraph <- function(mst, Z, order, full_tree = FALSE, sp) {
+    near_path = unique(unlist(neighborhood(mst, order = order, nodes = sp$vpath)))
+    node_type = rep("far", length(V(mst)))
+    node_type[near_path] = "near_path"
+    node_type[sp$vpath] = "on_path"
+    mst = set_vertex_attr(mst, "near_path", index = V(mst), node_type)
+    subg = induced_subgraph(mst, vids = near_path)
+    subgraph_edge_names = apply(as_edgelist(subg, names = TRUE), 1, paste, collapse = "-")
+    mst_edge_names = apply(as_edgelist(mst, names = TRUE), 1, paste, collapse = "-")
+    edge_near_path = ifelse(sapply(mst_edge_names, function(en) en %in% subgraph_edge_names),
+                            "near", "far")
+    mst = set_edge_attr(mst, "edge_near_path", index = E(mst), edge_near_path)
+
+    if(full_tree) {
+        fr_layout = layout_with_fr(mst, coords=layout_with_kk(mst))
+        out_pr = procuste(fr_layout, Z)
+    } else {
+        fr_layout = layout_with_fr(subg, coords=layout_with_kk(subg))
+        out_pr = procuste(fr_layout, Z[near_path,])
+    }
+
+    Z_pr = Z %*% as.matrix(out_pr$loadY)
+    return(list(tree = mst, subraph = subg, layout = Z_pr[,1:2]))
+}
+
+```
+
+
+Make Z be two clusters.
+Data is random and the Fruchterman-Reingold layout is random, so different values of the seed give better/worse results.
+4 is one where PCA doesn't do well, PCA on the path doesn't work well, but the Procrustes rotation does work well.
+Sometimes when the procrustes rotation doesn't work well, redoing it so that the graph layout is a bit different leads to a better result.
+```{r}
+n = 200
+dim = 500
+set.seed(4)
+Z = matrix(nrow=n, ncol=dim)
+edge = sqrt(qchisq(pnorm(1), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+## two clusters, separated only in the first dimension
+Z[1:(n/2),1] = Z[1:(n/2),1] + edge
+
+## make third and fourth dimensions bigger than cluster separation so PCA doesn't separate clusters
+Z = Z %*% diag(c(1,1,30,20,rep(1, dim-4)))
+Z = scale(Z, center=TRUE, scale=FALSE)
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, 1, n)
+
+path_pts = Z[sp$vpath,]
+pca_path = prcomp(path_pts, rank.=2)
+pca = prcomp(Z, rank.=2)
+
+df_path = data.frame(x=predict(pca_path, Z)[,1], y=predict(pca_path, Z)[,2])
+
+## projecting everything onto the path PCs
+p1 = ggplot(df_path, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df_path[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+## standard PCA with path points highlighted in red
+p2 = ggplot(data.frame(pca$x)) +
+    geom_point(aes(x = PC1, y = PC2)) +
+    geom_point(aes(x = PC1, y = PC2), color = 'red', data = data.frame(pca$x[sp$vpath,]))
+
+
+out = rotate_to_subgraph(mst, Z, order = 2, full_tree = FALSE, sp = sp)
+## project everything onto the plane that makes the path + neighbors look the most like the Fruchterman-Reingold layout
+p3 = ggplot(ggnetwork(out$tree, layout = out$layout)) +
+    geom_edges(aes(x = x, y = y, xend = xend, yend = yend, alpha = ifelse(edge_near_path == "far", 0, 1)), color = 'gray') +
+    geom_nodes(aes(x = x, y = y, color = near_path, alpha = ifelse(near_path == "on_path", 1, .2)))
+p1/p2/p3
+```
+
+```{r}
+n = 200
+dim = 500
+theta = pi/4
+
+Z = matrix(nrow=n+2, ncol=dim)
+edge = sqrt(qchisq(pnorm(1), df=dim))
+Z[1:n,] = mvrnorm(n=n, mu=rep(0, dim), Sigma=diag(rep(1, dim)))
+Z[n+1,] = c(edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+Z[n+2,] = c(-edge*cos(theta), edge*sin(theta), rep(0, dim-2))
+
+Z = Z %*% diag(c(1,1,4,2,rep(1, dim-4)))
+Z = scale(Z, center=TRUE, scale=FALSE)
+
+mst = get_mst(dist(Z))
+sp = get_shortest_path(mst, n+1, n+2)
+
+path_pts = Z[sp$vpath,]
+pca_path = prcomp(path_pts, rank.=2)
+pca = prcomp(Z, rank.=2)
+
+df_path = data.frame(x=predict(pca_path, Z)[,1], y=predict(pca_path, Z)[,2])
+
+## projecting everything onto the path PCs
+p1 = ggplot(df_path, aes(x=x, y=y)) +
+  geom_point() +
+  geom_segment(data=df_path[sp$vpath,],
+             aes(xend=lead(x), yend=lead(y)),
+             linewidth=0.3,
+             color="black")
+## standard PCA with path points highlighted in red
+p2 = ggplot(data.frame(pca$x)) +
+    geom_point(aes(x = PC1, y = PC2)) +
+    geom_point(aes(x = PC1, y = PC2), color = 'red', data = data.frame(pca$x[sp$vpath,]))
+
+
+out = rotate_to_subgraph(mst, Z, order = 1, full_tree = FALSE, sp = sp)
+## project everything onto the plane that makes the path + neighbors look the most like the Fruchterman-Reingold layout
+p3 = ggplot(ggnetwork(out$tree, layout = out$layout)) +
+    geom_edges(aes(x = x, y = y, xend = xend, yend = yend, alpha = ifelse(edge_near_path == "far", 0, 1)), color = 'gray') +
+    geom_nodes(aes(x = x, y = y, color = near_path, alpha = ifelse(near_path == "on_path", 1, .2)))
+p1/p2/p3
+```

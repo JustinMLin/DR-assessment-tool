@@ -45,7 +45,11 @@ run_app = function(Z, X, cluster, id=NULL) {
             accordion_panel(
               "Path Projection Settings",
               style="background-color: #f2f2f2",
-              sliderInput("order", "Nearest Neighbor Degree", min=0, max=10, value=0, step=1),
+              radioButtons("layout_init",
+                           label = "Layout Initialization",
+                           choices = c("Kamada-Kawai", "CCA"),
+                           inline = TRUE),
+              sliderInput("order", "Nearest Neighbor Degree", min=0, max=5, value=0, step=1),
               sliderInput("adjust", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
             )
           ),
@@ -101,7 +105,7 @@ run_app = function(Z, X, cluster, id=NULL) {
             accordion_panel(
               "Path Projection Settings",
               style="background-color: #f2f2f2",
-              sliderInput("order_brush", "Nearest Neighbor Degree", min=0, max=10, value=0, step=1),
+              sliderInput("order_brush", "Nearest Neighbor Degree", min=0, max=5, value=0, step=1),
               sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05),
               radioButtons("path_color_brush",
                            label="Path Projection Coloring",
@@ -179,7 +183,7 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection(Z, tree, shortest_path(), input$order, cluster, id, input$slider, input$adjust)
+      ret = plot_2d_projection(Z, tree, shortest_path(), input$order, cluster, id, input$layout_init, input$slider, input$adjust)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%

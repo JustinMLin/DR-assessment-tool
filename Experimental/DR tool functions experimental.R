@@ -5,6 +5,7 @@ library(ggplot2)
 library(usedist)
 library(ade4)
 library(ggnetwork)
+library(CCA)
 
 ##### MST and Shortest Path Calculation #####
 
@@ -89,23 +90,48 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 
 ##### 2D Path Projection Plot #####
 
-plot_2d_projection = function(Z, mst, path, order, cluster, id, slider, adjust) {
+plot_2d_projection = function(Z, mst, path, order, cluster, id, layout_init, slider, adjust) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-  
-  near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
-  path_subg = induced_subgraph(mst, vids=near_path_ids)
-  fr_layout = layout_with_fr(path_subg)
-  
-  out_pr = procuste(fr_layout, Z[near_path_ids,])
-  
-  X = Z %*% as.matrix(out_pr$loadY)
   
   path_ids = as.numeric(path$vpath)
   first_label = cluster[path_ids[1]]
   last_label = cluster[path_ids[length(path_ids)]]
   ids = unique(c(path_ids, which(cluster == first_label), which(cluster == last_label)))
   
+  near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
+  path_subg = induced_subgraph(mst, vids=near_path_ids)
+  
+  if (layout_init == "CCA") {
+    dim = 50
+    degree = 3
+    
+    pts = Z[ids,]
+    
+    pca = prcomp(pts, rank.=dim)
+    X_all = predict(pca, Z)
+    
+    ref_mat = matrix(nrow=length(path$vpath), ncol=degree)
+    for (i in 1:degree) {
+      ref_mat[,i] = (1:length(path$vpath))^i
+    }
+    
+    lambda = estim.regul(X_all[path_ids,], ref_mat, 
+                         grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
+                         plt=FALSE)$lambda1
+    cc1 = rcc(X_all[path_ids,], ref_mat, lambda, 0)
+    
+    init = (X_all[near_path_ids,] %*% cc1$xcoef)[,1:2]
+  } else if (layout_init == "Kamada-Kawai") {
+    init = layout_with_kk(path_subg)
+  }
+  
+  fr_layout = layout_with_fr(path_subg, coords=init)
+  
+  out_pr = procuste(fr_layout, Z[near_path_ids,])
+  
+  X = Z %*% as.matrix(out_pr$loadY)
+
   projected_pts = X[ids,]
   cols = cluster[ids]
   
@@ -132,7 +158,7 @@ plot_2d_projection_brush = function(Z, mst, path, order, g1, g2, cluster, id, sl
   
   near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
   path_subg = induced_subgraph(mst, vids=near_path_ids)
-  fr_layout = layout_with_fr(path_subg)
+  fr_layout = layout_with_fr(path_subg, coords=layout_with_kk(path_subg))
   
   out_pr = procuste(fr_layout, Z[near_path_ids,])
   
