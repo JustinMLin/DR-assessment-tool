@@ -82,13 +82,19 @@ To understand the relationship between two specific clusters, the tool requires 
 
 Let $P \in \mathbb{R}^{k \times p}$ be the matrix of high-dimensional path points with endpoints $p_1, p_k \in \mathbb{R}^p$. Let $X \in \mathbb{R}^{n \times p}$ be the matrix of points of with interest. By default, the points of interest include the path points and all points belonging to the same cluster as $p_1$ or $p_k$. Alternatively, the user may select point there own points of interest.
 
-The idea is to use canonical-correlation analysis (CCA) to determine the two-dimensional projection that best unwinds the path. Given two data matrices with an equal number of rows, CCA iteratively calculates linear combinations of the matrix features, known as canonical variate pairs, that maximize covariance. The canonical variate pairs are chosen to be orthogonal to all previous pairs, so they give rise to a projection subspace. To unwind $P$, we use CCA to compare P against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
+The idea is to use canonical-correlation analysis (CCA) to determine the two-dimensional linear projection that best unwinds the path. Given two data matrices with an equal number of rows, CCA iteratively calculates linear combinations of the matrix features, known as canonical variate pairs, that maximize covariance. The canonical variate pairs are chosen to be orthogonal to all previous pairs, so they give rise to a projection subspace. To unwind $P$, we use CCA to compare $P$ against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
 1 & 1^2 & \cdots & 1^d \\
 2 & 2^2 & \cdots & 2^d \\
 \vdots & \vdots & & \vdots \\
 n & n^2 & \cdots & n^d
 \end{bmatrix}$$
-and use the first two canonical variate pairs to construct a two-dimensional projection of $P$ that maximizes its covariance with $P_d$
+and use the first two canonical variate pairs to construct a two-dimensional projection of $P$ that maximizes its covariance with $P_d$. This process generates a two-dimensional subspace on which we can project all of $X$.
+
+One issue with this method is the projected path often travels along the outskirts of the plot. This is due to the near-orthogonality of high-dimensional data \cite{near-orthogonal} caused by the large number of noise dimensions. Because the non-path points are often nearly orthogonal with the projection subspace, they are overly shrunk in the projection. The path points are less affected because the projection subspace is selected to retain the path's shape. While this phenomenon doesn't discredit the entire plot, it leads to misrepresentation of the path's location relative to the rest of the points.
+
+To alleviate this issue, we propose PCA -- CCA method. Prior to the CCA step, we first apply PCA on the entirety of $X$ to reduce the levels of noise. This prevents excess noise from overshadowing significant structures, increasing correlation between points. When CCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
+
+The tool allows the user to specify two different hyperparameters -- the dimension of the initial PCA projection and the degree of the CCA comparison polynomial. Recommedations for calibrating these hyperparameters is discussed later.
 
 \section{Results}
 
@@ -140,6 +146,11 @@ Andy Coenen and Adam Pearce for Google PAIR.
 Li Deng.
 \newblock The MNIST database of handwritten digit images for machine learning research.
 \newblock {\em IEEE Signal Processing Magazine 29:6}, 2012.
+
+\bibitem{near-orthogonal}
+Persi Diaconis and David Freedman.
+\newblock Asymptotics of graphical projection pursuit.
+\newblock {\em The Annals of Statistics 12:3, 783-815}, 1984.
 
 \bibitem{image metrics}
 Vito Di Ges\`u and Valery Starovoitov.
