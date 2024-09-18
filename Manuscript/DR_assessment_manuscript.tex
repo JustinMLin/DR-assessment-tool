@@ -77,41 +77,64 @@ To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{The PCA -- CCA Method}
+\subsection{The PCA -- rCCA Method}
 To understand the relationship between two specific clusters, the tool requires the user to specify a path connecting said clusters. Once a path is specified, a local projection method is applied to visualize the path and nearby points of interest in two dimensions.
 
-Let $P \in \mathbb{R}^{k \times p}$ be the matrix of high-dimensional path points with endpoints $p_1, p_k \in \mathbb{R}^p$. Let $X \in \mathbb{R}^{n \times p}$ be the matrix of points of with interest. By default, the points of interest include the path points and all points belonging to the same cluster as $p_1$ or $p_k$. Alternatively, the user may select point there own points of interest.
+Let $P \in \mathbb{R}^{k \times p}$ be the matrix of high-dimensional path points with endpoints $p_1, p_k \in \mathbb{R}^p$. Let $X \in \mathbb{R}^{n \times p}$ be the matrix of points of interest. By default, the points of interest include the path points and all points belonging to the same cluster as $p_1$ or $p_k$. Alternatively, the user may select their own points of interest.
 
-The idea is to use canonical-correlation analysis (CCA) to determine the two-dimensional linear projection that best unwinds the path. Given two data matrices with an equal number of rows, CCA iteratively calculates linear combinations of the matrix features, known as canonical variate pairs, that maximize covariance. The canonical variate pairs are chosen to be orthogonal to all previous pairs, so they give rise to a projection subspace. To unwind $P$, we use CCA to compare $P$ against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
+The idea is to use regularized canonical-correlation analysis (rCCA) to determine the two-dimensional linear projection that best unwinds the path. Given two data matrices with an equal number of rows, rCCA iteratively calculates linear combinations of the matrix features, known as canonical variate pairs, that maximize covariance. The canonical variate pairs are chosen to be orthogonal to all previous pairs, so they give rise to a projection subspace. To unwind $P$, we use CCA to compare $P$ against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
 1 & 1^2 & \cdots & 1^d \\
 2 & 2^2 & \cdots & 2^d \\
 \vdots & \vdots & & \vdots \\
 n & n^2 & \cdots & n^d
 \end{bmatrix}$$
-and use the first two canonical variate pairs to construct a two-dimensional projection of $P$ that maximizes its covariance with $P_d$. This process generates a two-dimensional subspace on which we can project all of $X$.
+and use the first two canonical variate pairs to construct a two-dimensional projection of $P$ that maximizes its covariance with $P_d$. This process generates a two-dimensional subspace on which we can project all of $X$. We use rCCA as opposed to ordinary CCA due to the high-dimensionality of $X$. Often times $p >> n$, leading to singular covariance matrices. The regularization constant is chosen using cross-validation. There is no regularization constant needed for $P_d$.
 
 One issue with this method is the projected path often travels along the outskirts of the plot. This is due to the near-orthogonality of high-dimensional data \cite{near-orthogonal} caused by the large number of noise dimensions. Because the non-path points are often nearly orthogonal with the projection subspace, they are overly shrunk in the projection. The path points are less affected because the projection subspace is selected to retain the path's shape. While this phenomenon doesn't discredit the entire plot, it leads to misrepresentation of the path's location relative to the rest of the points.
 
-To alleviate this issue, we propose PCA -- CCA method. Prior to the CCA step, we first apply PCA on the entirety of $X$ to reduce the levels of noise. This prevents excess noise from overshadowing significant structures, increasing correlation between points. When CCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
+To alleviate this issue, we propose a PCA -- CCA method. Prior to the CCA step, we first apply PCA on the entirety of $X$ to reduce the levels of noise. This prevents the confusion of excess noise for independence. When CCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
 
-The tool allows the user to specify two different hyperparameters -- the dimension of the initial PCA projection and the degree of the CCA comparison polynomial. Recommedations for calibrating these hyperparameters is discussed later.
+The tool allows the user to specify two different hyperparameters -- the dimension of the initial PCA projection and the degree of the CCA comparison polynomial. The percentage of the variance retained during the PCA process is provided. It is recommended the user scans through a range of numbers of dimensions. As the number of dimensions increases, the path will begin to circumvent the rest of the points but more inter-cluster separation might appear. A smaller number of dimensions is useful for understanding the path's trajectory with respect to the points, while a larger   number might be better for separating clusters.
+
+To calibrate the degree of the CCA comparison polynomial, the user should scan over different values. In most cases, the path's shape will stabilize beyond a certain degree. It is recommended to set the degree to this degree of stabilization.
+
+\subsection{The Tool}
+After providing the original data matrix, the two-dimensional embedding data matrix, and a clustering, the user is met with a dashboard containing the low-dimensional plot colored according to the clustering and a sidebar with various settings. From there, the user must specify the path and points of interest in one of two ways -- by simply inputting the endpoints or defining their own custom clusters. The former method will use the path points and points belonging to the same cluster as either endpoint as the points of interest. The latter method will choose the (high-dimensional) medoids of the selected clusters as endpoints and use the path points in addition to the custom clusters as the points of interest.
+
+Once a path is chosen, its low-dimensional projection will overlay the low-dimensional embedding. Furthermore, the user will be presented with two analytical plots. The first plot will show the results of the PCA -- CCA method. The sidebar includes hyperparameter settings as well as a bandwidth adjustment. The bandwidth adjustment allows for a density overlay that may help users distinguish clusters. The second plot is a bar plot of path weights. The plot represents the weights of the original path in high dimension, so it provides insight on how the path was transformed throughout the dimension reduction process.
+
+Other settings include a viewing of the entire medoid subtree and path highlighting. The medoid subtree is helpful for understanding the global positioning of clusters, and the path-highlighting function allows the user to traverse along the path while highlighting the corresponding segment in all three plots.
 
 \section{Results}
 
 \subsection{MST Stability Experiment}
-1,500 samples were randomly chosen from the MNIST data set \cite{MNIST}. Each $784 \times 784$-pixel image was flattened into a vector of length $784^2$, so the data contain 1,500 samples in $784^2$ dimensions. A PCA pre-processing step was employed to reduce the number of dimensions to 300. The simplified medoid subtree $T$ was then calculated.
+1,500 samples were randomly chosen from the MNIST data set of handwritten digits \cite{MNIST}. Each $784 \times 784$-pixel image was flattened into a vector of length $784^2$, so the data contain 1,500 samples in $784^2$ dimensions. A PCA pre-processing step was employed to reduce the number of dimensions to 300. The simplified medoid subtree $T$ was then calculated.
 
 Random Gaussian noise was then added to the data and the new simplified medoid subtree $T'$ was calculated. The R-F distance $RF(T, T')$ was recorded. This process was repeated 30 times.
 
 \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{1}
-\begin{figure*}[!b]
+\begin{figure*}[!t]
 \centering
 \includegraphics[scale=0.3]{RF stability}
 \caption{MST Stability on MNIST Data Set}
 \end{figure*}
 
 To better interpret the R-F distances, we designed a null distribution of distances as a reference for comparison. These distances should represent R-F distances between trees that do not portray similar global structures and inter-cluster relationships. To generate the null distribution from the data, we randomly permuted the class labels and computed the R-F distances between the resulting simplified medoid subtrees and the original simplified medoid subtree. By randomly re-labelling the clusters, we are simulating examples with distinct global structures. Figure 1 shows the R-F distances produced by adding noise and permuting the class labels. The simplified medoid subtree trees generated by adding noise were significantly closer to the original simplified medoid subtree than those generated by randomly permuting the class labels in terms of R-F distance.
+
+\subsection{Using the Tool}
+To demonstrate how to use the tool, we explore the MNIST data in detail. Again, the $784 \times 784$-pixel images were flattened and 1,500 samples were randomly sampled. A PCA pre-processing step was applied prior to applying UMAP \cite{UMAP} to construct a two-dimensional embedding. To demonstrate the tool's utility, we study a k-means clustering instead of the true class labels (Figure 2). The reader may follow along using the \texttt{run\_example()} function in our \textit{DRtools} package.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{2}
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.45]{MNIST kmeans}
+\caption{MNIST Embedding with k-Means Coloring}
+\end{figure*}
+
+\subsubsection{Classes 1 and 2}
+According to the UMAP embedding, classes 1 and 2 may have been incorrectly separated by the k-means clustering.
 
 \newpage
 
@@ -171,6 +194,11 @@ Jerome H. Friedman and Lawrence C. Rafsky.
 Bracken M. King and Bruce Tidor.
 \newblock MIST: Maximum information spanning trees for dimension reduction of biological data sets.
 \newblock {\em Bioinformatics 25:9, 1165-1172}, 2009.
+
+\bibitem{UMAP}
+Leland McInnes et al.
+\newblock UMAP: Uniform Manifold Approximation and Projection.
+\newblock {\em The Journal of Open Source Software 3:29}. 2018.
 
 \bibitem{text data}
 Abdul Wahab Qurashi, Violeta Holmes, and Anju P. Johnson.
