@@ -149,12 +149,25 @@ plot_2d_projection = function(Z, mst, path, order, cluster, id, layout_init, sli
                  aes(xend=lead(x), yend=lead(y)),
                  color = factor(color),
                  linewidth=0.3)
-  
+    plotting_graph = induced_subgraph(mst, vids = ids)
+    plotting_graph = set_vertex_attr(plotting_graph, "color", index = V(plotting_graph), factor(cols))
+    plotting_graph = set_vertex_attr(plotting_graph, "id", index = V(plotting_graph), id[ids])
+
+  subgraph_edge_names = apply(as_edgelist(path_subg, names = TRUE), 1, paste, collapse = "-")
+  plotting_graph_edge_names = apply(as_edgelist(plotting_graph, names = TRUE), 1, paste, collapse = "-")
+  edge_near_path = ifelse(sapply(plotting_graph_edge_names, function(en) en %in% subgraph_edge_names),
+                            "near", "far")
+  plotting_graph = set_edge_attr(plotting_graph, "near_path", index = E(plotting_graph), edge_near_path)
+  p = ggplot(ggnetwork(plotting_graph, layout = projected_pts[,1:2])) +
+      geom_edges(aes(x = x, y = y, xend = xend, yend = yend, alpha = near_path)) +
+      geom_nodes(aes(x = x, y = y, color = color, label = id)) +
+      scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])
+
     list(p=p, var_explained=0)
 }
 
 plot_2d_projection_brush = function(Z, mst, path, order, g1, g2, cluster, id, slider, adjust, color_choice) {
-  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
+    cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
   
   near_path_ids = unique(unlist(neighborhood(mst, order=order, nodes=path$vpath)))
   path_subg = induced_subgraph(mst, vids=near_path_ids)
@@ -167,7 +180,6 @@ plot_2d_projection_brush = function(Z, mst, path, order, g1, g2, cluster, id, sl
   path_ids = as.numeric(path$vpath)
   ids = unique(c(path_ids, g1, g2))
   
-  projected_pts = X[ids,]
   
   if (color_choice == "Original Coloring") {
     cols = cluster[ids]
@@ -188,25 +200,36 @@ plot_2d_projection_brush = function(Z, mst, path, order, g1, g2, cluster, id, sl
     cols = factor(cols, levels=c("Path Point", "Group 1", "Group 2", "Group 1 and Group 2"))
   }
 
-  df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
   
   color = rep(1, length(path_ids))
   color[slider] = 2
   
-  p = ggplot(df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(color=as.factor(cols)), size=0.7) +
-    {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
-    {if (color_choice == "Original Coloring") scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])} +
-    {if (color_choice == "Group Coloring") scale_color_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"),
-                                                              drop=FALSE)} +
-    labs(title=paste0("Order = ", order), x="", y="", color="Color") +
-    geom_segment(data=df[1:length(path_ids),],
-                 aes(xend=lead(x), yend=lead(y)),
-                 color = factor(color),
-                 linewidth=0.3)
+    plotting_graph = induced_subgraph(mst, vids = ids)
+    names(cols) = ids
+    orig_ids = id[ids]
+    names(orig_ids) = ids
+    orig_ids = orig_ids[names(V(plotting_graph))]
+    cols = cols[names(V(plotting_graph))]
+  plotting_graph = set_vertex_attr(plotting_graph, "color", index = V(plotting_graph), factor(cols))
+  plotting_graph = set_vertex_attr(plotting_graph, "id", index = V(plotting_graph), orig_ids)
+  subgraph_edge_names = apply(as_edgelist(path_subg, names = TRUE), 1, paste, collapse = "-")
+  plotting_graph_edge_names = apply(as_edgelist(plotting_graph, names = TRUE), 1, paste, collapse = "-")
+  edge_near_path = ifelse(sapply(plotting_graph_edge_names, function(en) en %in% subgraph_edge_names),
+                            "near", "far")
+    plotting_graph = set_edge_attr(plotting_graph, "near_path", index = E(plotting_graph), edge_near_path)
+    projected_pts = X[as.numeric(names(V(plotting_graph))),]
+    df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[as.numeric(names(V(plotting_graph)))])
 
-  # ggplotly doesn't translate geom_text, add annotation later
-  list(p=p, var_explained=0)
+
+  p = ggplot(ggnetwork(plotting_graph, layout = projected_pts[,1:2], aes(label = id))) +
+      geom_edges(aes(x = x, y = y, xend = xend, yend = yend, alpha = near_path)) +
+      geom_nodes(aes(x = x, y = y, color = color, key = id)) +
+      {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
+      {if (color_choice == "Original Coloring") scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])} +
+      {if (color_choice == "Group Coloring") scale_color_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"), drop=FALSE)} +
+    labs(title=paste0("Order = ", order), x="", y="", color="Color")
+    ## ggplotly doesn't translate geom_text, add annotation later
+    return(list(p=p, var_explained=0))
 }
 
 get_medoid = function(X_dist, g) {

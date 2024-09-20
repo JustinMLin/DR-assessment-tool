@@ -5,7 +5,7 @@ library(plotly)
 library(shinythemes)
 library(bslib)
 
-source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Experimental/DR tool functions experimental.R")
+source("~/GitHub/DR-assessment-tool/Experimental/DR tool functions experimental.R")
 
 run_app = function(Z, X, cluster, id=NULL) {
   Z_dist = unname(dist(Z))
@@ -129,6 +129,10 @@ run_app = function(Z, X, cluster, id=NULL) {
           title="Analytical Plots",
           nav_panel("2D Path Projection", plotlyOutput("projPath_brush")),
           nav_panel("Path Weights", plotOutput("pathWeights_brush"))
+        ),
+        card(
+          card_header("Images"),
+          plotOutput("image")
         )
       )
     )
@@ -201,6 +205,19 @@ run_app = function(Z, X, cluster, id=NULL) {
       }
 
       plot_path_weights(shortest_path(), input$slider, max_length)
+    })
+    ## prints images of the digits
+    output$image = renderPlot({
+        ## copied
+        if(FALSE) {
+            if (is.null(shortest_path())) {
+                return(plotly_empty(type="bar"))
+            }
+            
+            plot_path_weights(shortest_path(), input$slider, max_length)
+        }
+        key = event_data("plotly_click")$key
+        image(t(matrix(data$images[as.numeric(key),], nrow = 28, ncol = 28, byrow = TRUE))[,28:1], asp = 1)
     })
 
     #######################
