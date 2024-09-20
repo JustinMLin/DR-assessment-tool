@@ -4,6 +4,7 @@ library(scales)
 library(ggplot2)
 library(usedist)
 library(CCA)
+library(ggnetwork)
 
 ##### MST and Shortest Path Calculation #####
 
@@ -88,7 +89,7 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 
 ##### 2D Path Projection Plot #####
 
-plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust) {
+plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, adjust, show_all_edges) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
   
@@ -118,20 +119,32 @@ plot_2d_projection = function(Z, path, cluster, id, dim, degree, slider, adjust)
   
   projected_pts = X %*% cc1$xcoef
   
-  df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
-  
   color = rep(1, length(path_ids))
   color[slider] = 2
   
-  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(color=factor(cols)), size=0.7) +
+  plotting_graph = induced_subgraph(mst, vids=ids) %>%
+    set_vertex_attr("color", value=factor(cols)) %>%
+    set_vertex_attr("id", value=id[ids])
+  
+  edge_mat = as_edgelist(plotting_graph, names=FALSE)
+  edge_type = sapply(1:ecount(plotting_graph), function(i) {
+    if (all(V(plotting_graph)$name[edge_mat[i,]] %in% path_ids)) {
+      "path"
+    } else {
+      "non-path"
+    }
+  })
+  
+  plotting_graph = set_edge_attr(plotting_graph, "edge_type", value=factor(edge_type))
+  
+  p = ggplot(ggnetwork(plotting_graph, layout=projected_pts[,1:2])) +
+    geom_nodes(aes(x=x, y=y, color=color, label=id), size=0.7) +
+    geom_edges(aes(x=x, y=y, xend=xend, yend=yend, alpha=edge_type), linewidth=0.3) +
     {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
     scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
-    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class") +
-    geom_segment(data=df[1:length(path_ids),],
-                 aes(xend=lead(x), yend=lead(y)),
-                 color = factor(color),
-                 linewidth=0.3)
+    {if (show_all_edges == "Show") scale_alpha_manual(values=c(0.3,1))} +
+    {if (show_all_edges == "Hide") scale_alpha_manual(values=c(0,1))} +
+    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class")
   
   # ggplotly doesn't translate geom_text, add annotation later
   list(p=p, var_explained=var_explained)

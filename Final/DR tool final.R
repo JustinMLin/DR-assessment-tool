@@ -47,7 +47,11 @@ run_app = function(Z, X, cluster, id=NULL) {
               style="background-color: #f2f2f2",
               numericInput("dim", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
               sliderInput("degree", "CCA Degree", min=2, max=10, value=2, step=1),
-              sliderInput("adjust", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05)
+              sliderInput("adjust", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05),
+              radioButtons("show_all_edges",
+                           label = "Show all MST edges?",
+                           choices = c("Hide", "Show"),
+                           inline = TRUE)
             )
           ),
           radioButtons("med_subtree1",
@@ -181,7 +185,7 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection(Z, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust)
+      ret = plot_2d_projection(Z, tree, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust, input$show_all_edges)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
