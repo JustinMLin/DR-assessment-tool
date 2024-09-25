@@ -101,7 +101,6 @@ plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, ad
   
   ids = unique(c(path_ids, which(cluster == first_label), which(cluster == last_label)))
   pts = Z[ids,]
-  cols = cluster[ids]
   
   pca = prcomp(pts, rank.=dim)
   X = predict(pca, pts)
@@ -119,38 +118,50 @@ plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, ad
   
   projected_pts = X %*% cc1$xcoef
   
-  color = rep(1, length(path_ids))
-  color[slider] = 2
-  
+  #induced_subgraph re-orders vertices by vids, low to high
   plotting_graph = induced_subgraph(mst, vids=ids) %>%
-    set_vertex_attr("color", value=factor(cols)) %>%
-    set_vertex_attr("id", value=id[ids])
+    set_vertex_attr("color", value=factor(cluster[sort(ids)])) %>%
+    set_vertex_attr("id", value=id[sort(ids)])
   
+  num_edges = ecount(plotting_graph)
   edge_mat = as_edgelist(plotting_graph, names=FALSE)
-  edge_type = sapply(1:ecount(plotting_graph), function(i) {
-    if (all(V(plotting_graph)$name[edge_mat[i,]] %in% path_ids)) {
-      "path"
-    } else {
-      "non-path"
+  path_color = rep(NA, num_edges)
+  edge_type = rep("non-path", num_edges)
+  
+  for (i in 1:num_edges) {
+    index_in_path_ids = match(V(plotting_graph)$name[edge_mat[i,]], path_ids)
+    if (!any(is.na(index_in_path_ids))) {
+      if (min(index_in_path_ids) == slider) {
+        path_color[i] = 2
+      } else {
+        path_color[i] = 1
+      }
+      edge_type[i] = "path"
     }
-  })
+  }
   
-  plotting_graph = set_edge_attr(plotting_graph, "edge_type", value=factor(edge_type))
+  plotting_graph = plotting_graph %>%
+    set_edge_attr("edge_type", value=factor(edge_type)) %>%
+    set_edge_attr("path_color", value=factor(path_color))
   
-  p = ggplot(ggnetwork(plotting_graph, layout=projected_pts[,1:2])) +
-    geom_nodes(aes(x=x, y=y, color=color, label=id), size=0.7) +
-    geom_edges(aes(x=x, y=y, xend=xend, yend=yend, alpha=edge_type), linewidth=0.3) +
+  df = ggnetwork(plotting_graph, layout=projected_pts[order(ids),1:2])
+  
+  p = ggplot(df) +
+    geom_nodes(aes(x=x, y=y, fill=color, label=id), size=0.8, color="transparent", shape=21) +
+    scale_fill_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cluster[ids]))]) +
+    geom_edges(data=df[df$edge_type == "path",],
+               aes(x=x, y=y, xend=xend, yend=yend, color=path_color), linewidth=0.3) +
+    scale_color_manual(values=c("black", "red")) +
+    {if (show_all_edges == "Show") geom_edges(data=df[df$edge_type == "non-path",],
+                                              aes(x=x, y=y, xend=xend, yend=yend), linewidth=0.3, alpha=0.2)} +
     {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
-    scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))]) +
-    {if (show_all_edges == "Show") scale_alpha_manual(values=c(0.3,1))} +
-    {if (show_all_edges == "Hide") scale_alpha_manual(values=c(0,1))} +
     labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class")
   
   # ggplotly doesn't translate geom_text, add annotation later
   list(p=p, var_explained=var_explained)
 }
 
-plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, slider, adjust, color_choice) {
+plot_2d_projection_brush = function(Z, mst, path, g1, g2, cluster, id, dim, degree, slider, adjust, show_all_edges, color_choice) {
   # convert cluster to standard form
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
   
@@ -161,12 +172,12 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
   pts = Z[ids,]
   
   if (color_choice == "Original Coloring") {
-    cols = cluster[ids]
+    cols = cluster[sort(ids)]
   }
   else if (color_choice == "Group Coloring") {
-    group_path_ids = match(path_ids, ids)
-    g1_ids = match(g1, ids)
-    g2_ids = match(g2, ids)
+    group_path_ids = match(path_ids, sort(ids))
+    g1_ids = match(g1, sort(ids))
+    g2_ids = match(g2, sort(ids))
     
     cols = sapply(1:length(ids), function(i) {
       case_when(
@@ -195,22 +206,46 @@ plot_2d_projection_brush = function(Z, path, g1, g2, cluster, id, dim, degree, s
   
   projected_pts = X %*% cc1$xcoef
   
-  df = data.frame(x=projected_pts[,1], y=projected_pts[,2], id=id[ids])
+  #induced_subgraph re-orders vertices by vids, low to high
+  plotting_graph = induced_subgraph(mst, vids=ids) %>%
+    set_vertex_attr("color", value=factor(cols)) %>%
+    set_vertex_attr("id", value=id[sort(ids)])
   
-  color = rep(1, length(path_ids))
-  color[slider] = 2
+  num_edges = ecount(plotting_graph)
+  edge_mat = as_edgelist(plotting_graph, names=FALSE)
+  path_color = rep(NA, num_edges)
+  edge_type = rep("non-path", num_edges)
   
-  p = ggplot(data=df, aes(x=x, y=y, label=id)) +
-    geom_point(aes(color=as.factor(cols)), size=0.7) +
+  for (i in 1:num_edges) {
+    index_in_path_ids = match(V(plotting_graph)$name[edge_mat[i,]], path_ids)
+    if (!any(is.na(index_in_path_ids))) {
+      if (min(index_in_path_ids) == slider) {
+        path_color[i] = 2
+      } else {
+        path_color[i] = 1
+      }
+      edge_type[i] = "path"
+    }
+  }
+  
+  plotting_graph = plotting_graph %>%
+    set_edge_attr("edge_type", value=factor(edge_type)) %>%
+    set_edge_attr("path_color", value=factor(path_color))
+  
+  df = ggnetwork(plotting_graph, layout=projected_pts[order(ids),1:2])
+  
+  p = ggplot(df) +
+    geom_nodes(aes(x=x, y=y, fill=color, label=id), size=0.8, color="transparent", shape=21) +
+    {if (color_choice == "Original Coloring") scale_fill_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cluster[ids]))])} +
+    {if (color_choice == "Group Coloring") scale_fill_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"),
+                                                             drop=FALSE)} +
+    geom_edges(data=df[df$edge_type == "path",],
+               aes(x=x, y=y, xend=xend, yend=yend, color=path_color), linewidth=0.3) +
+    scale_color_manual(values=c("black", "red")) +
+    {if (show_all_edges == "Show") geom_edges(data=df[df$edge_type == "non-path",],
+                                              aes(x=x, y=y, xend=xend, yend=yend), linewidth=0.3, alpha=0.2)} +
     {if (adjust != 0) geom_density2d(aes(x=x, y=y), inherit.aes=FALSE, adjust=adjust, alpha=.5)} +
-    {if (color_choice == "Original Coloring") scale_color_manual(values=hue_pal()(length(unique(cluster)))[sort(unique(cols))])} +
-    {if (color_choice == "Group Coloring") scale_color_manual(values=c("black", "#F8766D", "#00BFC4", "#C77CFF"),
-                                                              drop=FALSE)} +
-    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Color") +
-    geom_segment(data=df[1:length(path_ids),],
-                 aes(xend=lead(x), yend=lead(y)),
-                 color = factor(color),
-                 linewidth=0.3)
+    labs(title=paste0("CCA with degree ", degree), x="", y="", color="Class")
   
   # ggplotly doesn't translate geom_text, add annotation later
   list(p=p, var_explained=var_explained)

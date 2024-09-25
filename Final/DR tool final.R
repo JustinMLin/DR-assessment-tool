@@ -4,6 +4,7 @@ library(dplyr)
 library(plotly)
 library(shinythemes)
 library(bslib)
+library(stringr)
 
 source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Final/DR tool functions final.R")
 
@@ -109,6 +110,10 @@ run_app = function(Z, X, cluster, id=NULL) {
               numericInput("dim_brush", "Dimension", min=2, max=dim(Z)[2], value=2, step=1),
               sliderInput("degree_brush", "CCA Degree", min=2, max=10, value=2, step=1),
               sliderInput("adjust_brush", "Bandwidth Adjustment", min=0, max=5, value = 0, step = .05),
+              radioButtons("show_all_edges_brush",
+                           label = "Show all MST edges?",
+                           choices = c("Hide", "Show"),
+                           inline = TRUE),
               radioButtons("path_color_brush",
                            label="Path Projection Coloring",
                            choices=c("Original Coloring", "Group Coloring"),
@@ -313,18 +318,31 @@ run_app = function(Z, X, cluster, id=NULL) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, 
+      ret = plot_2d_projection_brush(Z, tree, shortest_path_brush(), rv$g1, rv$g2, 
                                      cluster, id, input$dim_brush, input$degree_brush, 
                                      input$slider_brush, input$adjust_brush,
+                                     input$show_all_edges_brush,
                                      input$path_color_brush)
       
-      ggplotly(ret$p,
-               tooltip = c("x", "y", "label")) %>%
+      q = ggplotly(ret$p, tooltip = c("x", "y", "label"))
+      
+      # edit legend after conversion to plotly because ggplotly changes legend
+      for (i in 1:length(q$x$data)) {
+        if (q$x$data[[i]]$mode == "markers") {
+          q$x$data[[i]]$name = str_extract(q$x$data[[i]]$name, "(?<=\\().+(?=(,1\\)))")
+        } 
+        else if (q$x$data[[i]]$mode == "lines") {
+          q$x$data[[i]]$showlegend = FALSE
+        }
+      }
+      
+      q %>%
         layout(dragmode='pan') %>%
         add_annotations(text=paste(round(ret$var_explained, 2)),
                         xref='paper', yref='paper',
                         x=1, y=1,
                         showarrow = FALSE) %>%
+        layout(legend=list(title=list(text="Group"))) %>%
         {if (input$path_color_brush == "Original Coloring") layout(., showlegend = FALSE) else .}
     })
     
