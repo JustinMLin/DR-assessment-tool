@@ -12,6 +12,8 @@ run_app = function(Z, X, cluster, id=NULL) {
   Z_dist = unname(dist(Z))
   X = unname(X)
   
+  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
+  
   if (is.null(id)) {id = 1:nrow(X)}
   
   tree = get_mst(Z_dist)
@@ -152,6 +154,13 @@ run_app = function(Z, X, cluster, id=NULL) {
       sp
     })
     
+    projected_pts = reactive({
+      if (is.null(shortest_path())) NULL
+      else {
+        get_projection(Z, shortest_path(), cluster, input$dim, input$degree)
+      }
+    })
+    
     output$slider = renderUI({
       max = ifelse(is.null(shortest_path()),
                    0,
@@ -186,11 +195,14 @@ run_app = function(Z, X, cluster, id=NULL) {
     })
     
     output$projPath = renderPlotly({
-      if (is.null(shortest_path())) {
+      if (is.null(projected_pts())) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection(Z, tree, shortest_path(), cluster, id, input$dim, input$degree, input$slider, input$adjust, input$show_all_edges)
+      ret = plot_2d_projection(tree, cluster, projected_pts()$projected_pts,
+                               projected_pts()$ids, projected_pts()$path_ids,
+                               projected_pts()$var_explained, input$degree, 
+                               input$slider, input$adjust, input$show_all_edges)
       
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
@@ -225,6 +237,13 @@ run_app = function(Z, X, cluster, id=NULL) {
     })
     
     rv = reactiveValues(g1 = NULL, g2 = NULL)
+    
+    projected_pts_brush = reactive({
+      if (is.null(shortest_path_brush())) NULL
+      else {
+        get_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, cluster, input$dim_brush, input$degree_brush, input$path_color_brush)
+      }
+    })
     
     observeEvent(input$group1, {
       d = event_data("plotly_selecting")
@@ -314,14 +333,14 @@ run_app = function(Z, X, cluster, id=NULL) {
     })
     
     output$projPath_brush = renderPlotly({
-      if (is.null(shortest_path_brush())) {
+      if (is.null(projected_pts_brush())) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
       
-      ret = plot_2d_projection_brush(Z, tree, shortest_path_brush(), rv$g1, rv$g2, 
-                                     cluster, id, input$dim_brush, input$degree_brush, 
-                                     input$slider_brush, input$adjust_brush,
-                                     input$show_all_edges_brush,
+      ret = plot_2d_projection_brush(tree, cluster, rv$g1, rv$g2, projected_pts_brush()$projected_pts,
+                                     projected_pts_brush()$ids, projected_pts_brush()$path_ids,
+                                     projected_pts_brush()$var_explained, input$degree_brush, 
+                                     input$slider_brush, input$adjust_brush, input$show_all_edges_brush, 
                                      input$path_color_brush)
       
       q = ggplotly(ret$p, tooltip = c("x", "y", "label"))

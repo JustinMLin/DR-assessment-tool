@@ -88,11 +88,7 @@ plot_medoid_mst = function(plot, df, Z_dist, tree) {
 }
 
 ##### 2D Path Projection Plot #####
-
-plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, adjust, show_all_edges) {
-  # convert cluster to standard form
-  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-  
+get_projection = function(Z, path, cluster, dim, degree) {
   path_ids = as.numeric(path$vpath)
   path_pts = Z[path_ids,]
   
@@ -116,8 +112,10 @@ plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, ad
                        plt=FALSE)$lambda1
   cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
   
-  projected_pts = X %*% cc1$xcoef
-  
+  list(projected_pts = X %*% cc1$xcoef, ids = ids, path_ids = path_ids, var_explained = var_explained)
+}
+
+plot_2d_projection = function(mst, cluster, projected_pts, ids, path_ids, var_explained, degree, slider, adjust, show_all_edges) {
   #induced_subgraph re-orders vertices by vids, low to high
   plotting_graph = induced_subgraph(mst, vids=ids) %>%
     set_vertex_attr("color", value=factor(cluster[sort(ids)])) %>%
@@ -161,16 +159,31 @@ plot_2d_projection = function(Z, mst, path, cluster, id, dim, degree, slider, ad
   list(p=p, var_explained=var_explained)
 }
 
-plot_2d_projection_brush = function(Z, mst, path, g1, g2, cluster, id, dim, degree, slider, adjust, show_all_edges, color_choice) {
-  # convert cluster to standard form
-  cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-  
+get_projection_brush = function(Z, path, g1, g2, cluster, dim, degree, color_choice) {
   path_ids = as.numeric(path$vpath)
   path_pts = Z[path_ids,]
   
   ids = unique(c(path_ids, g1, g2))
   pts = Z[ids,]
   
+  pca = prcomp(pts, rank.=dim)
+  X = predict(pca, pts)
+  var_explained = sum(pca$sdev[1:dim]^2)/sum(pca$sdev^2)
+  
+  ref_mat = matrix(nrow=length(path$vpath), ncol=degree)
+  for (i in 1:degree) {
+    ref_mat[,i] = (1:length(path$vpath))^i
+  }
+  
+  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
+                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
+                       plt=FALSE)$lambda1
+  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
+  
+  list(projected_pts = X %*% cc1$xcoef, ids = ids, path_ids = path_ids, var_explained = var_explained)
+}
+
+plot_2d_projection_brush = function(mst, cluster, g1, g2, projected_pts, ids, path_ids, var_explained, degree, slider, adjust, show_all_edges, color_choice) {
   if (color_choice == "Original Coloring") {
     cols = cluster[sort(ids)]
   }
@@ -189,22 +202,6 @@ plot_2d_projection_brush = function(Z, mst, path, g1, g2, cluster, id, dim, degr
     })
     cols = factor(cols, levels=c("Path Point", "Group 1", "Group 2", "Group 1 and Group 2"))
   }
-  
-  pca = prcomp(pts, rank.=dim)
-  X = predict(pca, pts)
-  var_explained = sum(pca$sdev[1:dim]^2)/sum(pca$sdev^2)
-  
-  ref_mat = matrix(nrow=length(path$vpath), ncol=degree)
-  for (i in 1:degree) {
-    ref_mat[,i] = (1:length(path$vpath))^i
-  }
-  
-  lambda = estim.regul(X[1:length(path_ids),], ref_mat, 
-                       grid1=seq(0.001, 1, length.out=10), grid2=c(0), 
-                       plt=FALSE)$lambda1
-  cc1 = rcc(X[1:length(path_ids),], ref_mat, lambda, 0)
-  
-  projected_pts = X %*% cc1$xcoef
   
   #induced_subgraph re-orders vertices by vids, low to high
   plotting_graph = induced_subgraph(mst, vids=ids) %>%
