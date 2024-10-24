@@ -11,28 +11,28 @@ source("/Users/justinlin/Desktop/Research/DR-assessment-tool/Final/DR tool funct
 run_app = function(Z, X, cluster, id=NULL) {
   Z_dist = unname(dist(Z))
   X = unname(X)
-  
+
   cluster = as.integer(as.factor(rank(cluster, ties.method="min")))
-  
+
   if (is.null(id)) {id = 1:nrow(X)}
-  
+
   tree = get_mst(Z_dist)
-  
+
   max_length = max(E(tree)$weight)
-  
+
   plotting_df = data.frame(x=X[,1], y=X[,2], cluster, id, row=1:nrow(X))
   p = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
     geom_point(size=0.3) +
     labs(color="Class")
   medoid_p = plot_medoid_mst(p, plotting_df, Z_dist, tree)
-  
+
   ui = page_navbar(
     title="Dimension Reduction Tool",
     theme=bs_theme(bootswatch="cosmo"),
     fillable=FALSE,
     nav_panel(
       title="Default Clusters",
-      
+
       layout_sidebar(
         sidebar=sidebar(
           open="always",
@@ -63,12 +63,12 @@ run_app = function(Z, X, cluster, id=NULL) {
                        inline = TRUE),
           uiOutput("slider")
         ),
-        
+
         card(
           card_header("Low-Dimensional Embedding"),
           plotlyOutput("lowDimPlot")
         ),
-        
+
         navset_card_underline(
           title="Analytical Plots",
           nav_panel("2D Path Projection", plotlyOutput("projPath")),
@@ -76,7 +76,7 @@ run_app = function(Z, X, cluster, id=NULL) {
         )
       )
     ),
-    
+
     nav_panel(
       title="Custom Clusters",
       layout_sidebar(
@@ -88,7 +88,7 @@ run_app = function(Z, X, cluster, id=NULL) {
             accordion_panel(
               "Group Selection",
               style="background-color: #f2f2f2",
-              actionButton("group1", "Submit Group 1", 
+              actionButton("group1", "Submit Group 1",
                            style="color: black;
                                  background-color: white;
                                  border-color: #dee2e6;
@@ -128,12 +128,12 @@ run_app = function(Z, X, cluster, id=NULL) {
                        inline = TRUE),
           uiOutput("slider_brush")
         ),
-        
+
         card(
           card_header("Low-Dimensional Embedding"),
           plotlyOutput("lowDimPlot_brush")
         ),
-        
+
         navset_card_underline(
           title="Analytical Plots",
           nav_panel("2D Path Projection", plotlyOutput("projPath_brush")),
@@ -142,7 +142,7 @@ run_app = function(Z, X, cluster, id=NULL) {
       )
     )
   )
-  
+
   server = function(input, output) {
     shortest_path = reactive({
       sp = tryCatch({
@@ -150,22 +150,22 @@ run_app = function(Z, X, cluster, id=NULL) {
       }, error = function(err) {
         return(NULL)
       })
-      
+
       sp
     })
-    
+
     projected_pts = reactive({
       if (is.null(shortest_path())) NULL
       else {
         get_projection(Z, shortest_path(), cluster, input$dim, input$degree)
       }
     })
-    
+
     output$slider = renderUI({
       max = ifelse(is.null(shortest_path()),
                    0,
                    length(shortest_path()$vpath) - 1)
-      
+
       sliderInput("slider",
                   "Path component",
                   min = 0,
@@ -173,7 +173,7 @@ run_app = function(Z, X, cluster, id=NULL) {
                   value = 0,
                   step = 1)
     })
-    
+
     output$lowDimPlot = renderPlotly({
       if (input$med_subtree1 == "Show") {
         ggplotly(medoid_p,
@@ -193,17 +193,17 @@ run_app = function(Z, X, cluster, id=NULL) {
         }
       }
     })
-    
+
     output$projPath = renderPlotly({
       if (is.null(projected_pts())) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
-      
+
       ret = plot_2d_projection(tree, cluster, projected_pts()$projected_pts,
                                projected_pts()$ids, projected_pts()$path_ids,
-                               projected_pts()$var_explained, input$degree, 
+                               projected_pts()$var_explained, input$degree,
                                input$slider, input$adjust, input$show_all_edges)
-      
+
       ggplotly(ret$p,
                tooltip = c("x", "y", "label")) %>%
         layout(dragmode='pan') %>%
@@ -213,17 +213,17 @@ run_app = function(Z, X, cluster, id=NULL) {
                         showarrow = FALSE) %>%
         layout(showlegend = FALSE)
     })
-    
+
     output$pathWeights = renderPlot({
       if (is.null(shortest_path())) {
         return(plotly_empty(type="bar"))
       }
-      
+
       plot_path_weights(shortest_path(), input$slider, max_length)
     })
-    
+
     #######################
-    
+
     shortest_path_brush = reactive({
       sp = tryCatch({
         get_shortest_path(tree,
@@ -232,50 +232,50 @@ run_app = function(Z, X, cluster, id=NULL) {
       }, error = function(err) {
         return(NULL)
       })
-      
+
       sp
     })
-    
+
     rv = reactiveValues(g1 = NULL, g2 = NULL)
-    
+
     projected_pts_brush = reactive({
       if (is.null(shortest_path_brush())) NULL
       else {
-        get_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, cluster, input$dim_brush, input$degree_brush, input$path_color_brush)
+        get_projection_brush(Z, shortest_path_brush(), rv$g1, rv$g2, cluster, input$dim_brush, input$degree_brush)
       }
     })
-    
+
     observeEvent(input$group1, {
       d = event_data("plotly_selecting")
       rv$g1 = as.numeric(d$key)
-      
+
       if (length(rv$g1) > 0) {
         updateNumericInput(inputId="from_brush", value=id[get_medoid(Z_dist, rv$g1)])
       } else rv$g1 = NULL
     })
-    
+
     observeEvent(input$group2, {
       d = event_data("plotly_selecting")
       rv$g2 = as.numeric(d$key)
-      
+
       if (length(rv$g2) > 0) {
         updateNumericInput(inputId="to_brush", value=id[get_medoid(Z_dist, rv$g2)])
       } else rv$g2 = NULL
     })
-    
+
     observeEvent(input$clear_brush, {
       rv$g1 = NULL
       rv$g2 = NULL
-      
+
       updateNumericInput(inputId="from_brush", value=0)
       updateNumericInput(inputId="to_brush", value=0)
     })
-    
+
     output$slider_brush = renderUI({
       max = ifelse(is.null(shortest_path_brush()),
                    0,
                    length(shortest_path_brush()$vpath) - 1)
-      
+
       sliderInput("slider_brush",
                   "Path component",
                   min = 0,
@@ -283,7 +283,7 @@ run_app = function(Z, X, cluster, id=NULL) {
                   value = 0,
                   step = 1)
     })
-    
+
     output$lowDimPlot_brush = renderPlotly({
       if (input$med_subtree2 == "Show") {
         ggplotly(medoid_p,
@@ -300,11 +300,11 @@ run_app = function(Z, X, cluster, id=NULL) {
           else {
             alpha = rep(1, nrow(X))
           }
-          
+
           p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
             geom_point(size=0.3, alpha=alpha) +
             labs(color="Class")
-          
+
           ggplotly(p_brush,
                    tooltip = c("x", "y", "label")) %>%
             layout(dragmode='lasso') %>%
@@ -319,11 +319,11 @@ run_app = function(Z, X, cluster, id=NULL) {
           else {
             alpha = rep(1, nrow(X))
           }
-          
+
           p_brush = ggplot(plotting_df, aes(x=x, y=y, color=factor(cluster), label=id, key=row)) +
             geom_point(size=0.5, alpha=alpha) +
             labs(color="Class")
-          
+
           ggplotly(add_path(p_brush, plotting_df, shortest_path_brush(), input$slider_brush),
                    tooltip = c("x", "y", "label")) %>%
             layout(dragmode='lasso') %>%
@@ -331,30 +331,30 @@ run_app = function(Z, X, cluster, id=NULL) {
         }
       }
     })
-    
+
     output$projPath_brush = renderPlotly({
       if (is.null(projected_pts_brush())) {
         return(plotly_empty(type="scatter", mode="markers"))
       }
-      
+
       ret = plot_2d_projection_brush(tree, cluster, rv$g1, rv$g2, projected_pts_brush()$projected_pts,
                                      projected_pts_brush()$ids, projected_pts_brush()$path_ids,
-                                     projected_pts_brush()$var_explained, input$degree_brush, 
-                                     input$slider_brush, input$adjust_brush, input$show_all_edges_brush, 
+                                     projected_pts_brush()$var_explained, input$degree_brush,
+                                     input$slider_brush, input$adjust_brush, input$show_all_edges_brush,
                                      input$path_color_brush)
-      
+
       q = ggplotly(ret$p, tooltip = c("x", "y", "label"))
-      
+
       # edit legend after conversion to plotly because ggplotly changes legend
       for (i in 1:length(q$x$data)) {
         if (q$x$data[[i]]$mode == "markers") {
           q$x$data[[i]]$name = str_extract(q$x$data[[i]]$name, "(?<=\\().+(?=(,1\\)))")
-        } 
+        }
         else if (q$x$data[[i]]$mode == "lines") {
           q$x$data[[i]]$showlegend = FALSE
         }
       }
-      
+
       q %>%
         layout(dragmode='pan') %>%
         add_annotations(text=paste(round(ret$var_explained, 2)),
@@ -364,15 +364,15 @@ run_app = function(Z, X, cluster, id=NULL) {
         layout(legend=list(title=list(text="Group"))) %>%
         {if (input$path_color_brush == "Original Coloring") layout(., showlegend = FALSE) else .}
     })
-    
+
     output$pathWeights_brush = renderPlot({
       if (is.null(shortest_path_brush())) {
         return(plotly_empty(type="bar"))
       }
-      
+
       plot_path_weights(shortest_path_brush(), input$slider_brush, max_length)
     })
   }
-  
+
   shinyApp(ui=ui, server=server)
 }
