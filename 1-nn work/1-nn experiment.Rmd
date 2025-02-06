@@ -1,0 +1,184 @@
+---
+title: "1-nn Experiments"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dbscan)
+library(igraph)
+
+source("1-nn functions.R")
+source("1-nn functions generalized.R")
+source("1-nn rectangle.R")
+source("../Final/DR tool functions final.R")
+```
+
+```{r in terms of n}
+n = c(10, 50, 100, 200)
+p = c(2, 5, 10, 50)
+b = 100
+
+nn_counts_sim = matrix(nrow=length(n), ncol=length(p))
+
+for (i in 1:length(n)) {
+  for (j in 1:length(p)) {
+    nn_counts_sim[i,j] = mean(replicate(b, {
+      num_pts = rpois(n=1, lambda=n[i])
+      t = n[i]^(1/p[j])
+      
+      if (num_pts <= 1) {
+        0
+      }
+      else {
+        X = matrix(runif(num_pts * p[j], min=-t/2, max=t/2), nrow=num_pts, ncol=p[j])
+    
+        neighbors = kNN(X, k=1)$id
+    
+        count = 0
+        for (k in 1:num_pts) {
+          if (sign(X[k,1]) != sign(X[neighbors[k],1])) {
+            count = count + ifelse(neighbors[neighbors[k]] == k, 1/2, 1)
+          }
+        }
+      
+      count
+      }
+    }))
+  }
+}
+
+nn_counts = matrix(nrow=length(n), ncol=length(p))
+
+for (i in 1:length(n)) {
+  for (j in 1:length(p)) {
+    t = n[i]^(1/p[j])
+    nn_counts[i,j] = E_crossings_p(p[j],t)
+  }
+}
+
+nn_counts_sim
+nn_counts
+```
+
+```{r small t}
+t = 1.05
+p = 100
+b = 200
+
+counts = vector(length=b)
+for (i in 1:b) {
+  num_pts = rpois(n=1, lambda=t^p)
+      
+  if (num_pts <= 1) {
+    counts[i] = 0
+  }
+  else {
+     X = matrix(runif(num_pts * p, min=-t/2, max=t/2), nrow=num_pts, ncol=p)
+
+    neighbors = kNN(X, k=1)$id
+
+    count = 0
+    for (k in 1:num_pts) {
+      if (sign(X[k,1]) != sign(X[neighbors[k],1])) {
+        count = count + ifelse(neighbors[neighbors[k]] == k, 1/2, 1)
+      }
+    }
+  
+    counts[i] = count
+  }
+}
+
+mean(counts)
+E_crossings_p(p,t)
+
+hist(counts)
+abline(v=E_crossings_closed(t), col="red")
+```
+
+```{r concentric rectangles}
+t = 1.05
+p = 100
+b = 200
+
+counts = vector(length=b)
+for (i in 1:b) {
+  num_pts = rpois(n=1, lambda=4*t^p)
+      
+  if (num_pts <= 1) {
+    counts[i] = 0
+  }
+  else {
+    Z = matrix(runif(num_pts * p, min=-t, max=t), nrow=num_pts, ncol=p)
+
+    neighbors = kNN(Z, k=1)$id
+
+    count = 0
+    
+    keep = -t/2 <= Z[,1] & Z[,1] <= t/2 & -t/2 <= Z[,2] & Z[,2] <= t/2
+    
+    for (k in which(keep == TRUE)) {
+      if (sign(Z[k,1]) != sign(Z[neighbors[k],1])) {
+        count = count + ifelse(neighbors[neighbors[k]] == k, 1/2, 1)
+      }
+    }
+  
+    counts[i] = count
+  }
+}
+
+mean(counts)
+E_crossings_p(p,t)
+
+hist(counts)
+abline(v=E_crossings_closed(t), col="red")
+```
+
+```{r}
+n = c(10, 50, 100)
+p = c(2, 5, 10, 50, 100)
+b = 100
+
+nn_counts_sim = matrix(nrow=length(n), ncol=length(p))
+nn_counts = matrix(nrow=length(n), ncol=length(p))
+
+for (i in 1:length(n)) {
+  for (j in 1:length(p)) {
+    t = n[i]^(1/p[j])
+    
+    count_sim = 0
+    count = 0
+    for (k in 1:b) {
+      num_pts = rpois(n=1, lambda=n[i])
+      X = matrix(runif(num_pts * p[j], min=-t/2, max=t/2), nrow=num_pts, ncol=p[j])
+      
+      ## simulated count
+      if (num_pts >= 2) {
+        neighbors = kNN(X, k=1)$id
+    
+        for (l in 1:num_pts) {
+          if (sign(X[l,1]) != sign(X[neighbors[l],1])) {
+            count_sim = count_sim + ifelse(neighbors[neighbors[l]] == l, 1/2, 1)
+          }
+        }
+      }
+        
+      ## theoretic count
+      pca = prcomp(X, rank. = p[j])
+      var_ratio = pca$sdev^2
+      
+      count = count + E_rectangle(var_ratio, num_pts)
+    }
+    
+    nn_counts_sim[i,j] = count_sim/b
+    nn_counts[i,j] = count/b
+  }
+}
+
+nn_counts_sim
+nn_counts
+```

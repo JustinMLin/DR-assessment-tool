@@ -1,0 +1,124 @@
+(* Content-type: application/vnd.wolfram.mathematica *)
+
+(*** Wolfram Notebook File ***)
+(* http://www.wolfram.com/nb *)
+
+(* CreatedBy='Wolfram 14.1' *)
+
+(*CacheID: 234*)
+(* Internal cache information:
+NotebookFileLineBreakTest
+NotebookFileLineBreakTest
+NotebookDataPosition[       154,          7]
+NotebookDataLength[      3856,        114]
+NotebookOptionsPosition[      3013,         93]
+NotebookOutlinePosition[      3404,        109]
+CellTagsIndexPosition[      3361,        106]
+WindowFrame->Normal*)
+
+(* Beginning of Notebook Content *)
+Notebook[{
+Cell[BoxData[{
+ RowBox[{
+  RowBox[{"Ir", "[", 
+   RowBox[{"z_", ",", "a_", ",", "b_"}], "]"}], " ", ":=", " ", 
+  RowBox[{
+   RowBox[{"Beta", "[", 
+    RowBox[{"z", ",", "a", ",", "b"}], "]"}], "/", 
+   RowBox[{"Beta", "[", 
+    RowBox[{"a", ",", "b"}], "]"}]}]}], "\n", 
+ RowBox[{
+  RowBox[{"V", "[", 
+   RowBox[{"n_", ",", "r_"}], "]"}], " ", ":=", " ", 
+  RowBox[{
+   RowBox[{
+    RowBox[{"Pi", "^", 
+     RowBox[{"(", 
+      RowBox[{"n", "/", "2"}], ")"}]}], "/", 
+    RowBox[{"Gamma", "[", 
+     RowBox[{
+      RowBox[{"n", "/", "2"}], "+", "1"}], "]"}]}], "*", 
+   RowBox[{"r", "^", "n"}]}]}]}], "Code",
+ CellChangeTimes->{{3.940604203407713*^9, 3.940604240107944*^9}, {
+  3.9406046973573637`*^9, 3.940604750637775*^9}},
+ CellLabel->"In[73]:=",ExpressionUUID->"4195138f-3086-40b2-9a4e-a700c34f8a6a"],
+
+Cell[CellGroupData[{
+
+Cell[BoxData[{
+ RowBox[{"n", " ", "=", " ", "2"}], "\n", 
+ RowBox[{
+  RowBox[{"r", " ", "=", " ", "3"}], "\n"}], "\n", 
+ RowBox[{"N", "[", 
+  RowBox[{
+   RowBox[{"V", "[", 
+    RowBox[{"n", ",", "r"}], "]"}], "*", 
+   RowBox[{"(", 
+    RowBox[{"1", "-", 
+     RowBox[{"Ir", "[", 
+      RowBox[{
+       RowBox[{"3", "/", "4"}], ",", 
+       RowBox[{
+        RowBox[{"(", 
+         RowBox[{"n", "+", "1"}], ")"}], "/", "2"}], ",", 
+       RowBox[{"1", "/", "2"}]}], "]"}]}], ")"}]}], "]"}], "\n", 
+ RowBox[{"N", "[", 
+  RowBox[{
+   RowBox[{"r", "^", "2"}], "*", 
+   RowBox[{"(", 
+    RowBox[{
+     RowBox[{"Pi", "/", "3"}], "+", 
+     RowBox[{
+      RowBox[{"Sqrt", "[", "3", "]"}], "/", "2"}]}], ")"}]}], "]"}]}], "Code",\
+
+ CellChangeTimes->{{3.9406047704930897`*^9, 3.940604863230369*^9}},
+ CellLabel->"In[83]:=",ExpressionUUID->"85197a70-1d67-4391-bc25-88592d72872c"],
+
+Cell[BoxData["2"], "Output",
+ CellChangeTimes->{{3.940604841400075*^9, 3.940604863844926*^9}},
+ CellLabel->"Out[83]=",ExpressionUUID->"0c1c301c-c4e9-434d-808c-478b803f8512"],
+
+Cell[BoxData["3"], "Output",
+ CellChangeTimes->{{3.940604841400075*^9, 3.940604863845722*^9}},
+ CellLabel->"Out[84]=",ExpressionUUID->"ddef3b38-5a29-4ac6-a0f2-86b77af2e973"],
+
+Cell[BoxData["17.219006594829324`"], "Output",
+ CellChangeTimes->{{3.940604841400075*^9, 3.9406048638464603`*^9}},
+ CellLabel->"Out[85]=",ExpressionUUID->"c9b51c9c-56b4-4516-bdc1-7f8e3f6945ee"],
+
+Cell[BoxData["17.219006594829327`"], "Output",
+ CellChangeTimes->{{3.940604841400075*^9, 3.9406048638471203`*^9}},
+ CellLabel->"Out[86]=",ExpressionUUID->"4b9e959b-f068-4326-83d5-a364bc07f1c4"]
+}, Open  ]]
+},
+WindowSize->{840, 912},
+WindowMargins->{{Automatic, 0}, {Automatic, 0}},
+FrontEndVersion->"14.1 for Mac OS X ARM (64-bit) (July 16, 2024)",
+StyleDefinitions->"Default.nb",
+ExpressionUUID->"98937b05-cb8e-4202-9c6d-1645cbb05933"
+]
+(* End of Notebook Content *)
+
+(* Internal cache information *)
+(*CellTagsOutline
+CellTagsIndex->{}
+*)
+(*CellTagsIndex
+CellTagsIndex->{}
+*)
+(*NotebookFileOutline
+Notebook[{
+Cell[554, 20, 805, 23, 69, "Code",ExpressionUUID->"4195138f-3086-40b2-9a4e-a700c34f8a6a"],
+Cell[CellGroupData[{
+Cell[1384, 47, 869, 27, 126, "Code",ExpressionUUID->"85197a70-1d67-4391-bc25-88592d72872c"],
+Cell[2256, 76, 173, 2, 33, "Output",ExpressionUUID->"0c1c301c-c4e9-434d-808c-478b803f8512"],
+Cell[2432, 80, 173, 2, 33, "Output",ExpressionUUID->"ddef3b38-5a29-4ac6-a0f2-86b77af2e973"],
+Cell[2608, 84, 193, 2, 33, "Output",ExpressionUUID->"c9b51c9c-56b4-4516-bdc1-7f8e3f6945ee"],
+Cell[2804, 88, 193, 2, 33, "Output",ExpressionUUID->"4b9e959b-f068-4326-83d5-a364bc07f1c4"]
+}, Open  ]]
+}
+]
+*)
+
+(* End of internal cache information *)
+

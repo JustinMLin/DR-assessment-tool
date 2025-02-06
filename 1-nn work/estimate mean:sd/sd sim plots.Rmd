@@ -1,0 +1,75 @@
+---
+title: "sd sim plots"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+
+load("mst_sd_sim_data.Rda")
+```
+
+```{r}
+df = data.frame(n=rep(n,length(p)), p=rep(p, each=length(n)), sd=sqrt(c(vars)))
+```
+
+```{r}
+ggplot(df, aes(x=n, y=sd, color=factor(p))) +
+  geom_point() +
+  geom_smooth(method="loess", se=FALSE) +
+  labs(color="Dimension")
+```
+```{r}
+write.csv(df, "sd_data.csv")
+```
+
+```{r}
+coef = read.csv("sd_parameters.csv")
+
+estimate_sd = function(n, p) {
+  if (p <= 20) {
+    m = coef[p-1, 'm']
+    k = coef[p-1, 'k']
+    C = coef[p-1, 'C']
+  } else {
+    m = coef[20, 'm']
+    k = coef[20, 'k']
+    C = coef[20, 'C']
+  }
+  
+  m * n ** k + C
+}
+```
+
+```{r}
+plot_sd = function(p) {
+  real_data = df[df$p == p, c('n','sd')]
+  
+  n = seq(from=2, to=500, by=2)
+  sim_data = data.frame(n = n, sd = sapply(n, function(x) estimate_sd(x, p)))
+  
+  full_data = rbind(real_data, sim_data)
+  full_data['type'] = c(rep("Real sd", length(real_data[,1])),
+                        rep("Simulated sd", length(n)))
+  
+  ggplot(full_data, aes(x=n, y=sd, color=type)) +
+    geom_point() +
+    geom_line()
+} 
+```
+
+```{r}
+plot_sd(2)
+plot_sd(5)
+plot_sd(10)
+plot_sd(20)
+plot_sd(50)
+plot_sd(100)
+plot_sd(150)
+plot_sd(200)
+```
+

@@ -1,0 +1,132 @@
+---
+title: "MST Simulation Plots"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(ggplot2)
+library(dplyr)
+
+load("mst_sim_data.Rda")
+
+source("../1-nn functions generalized.R")
+source("approx E_mst.R")
+```
+
+```{r}
+approx1 = sapply(n, function(n) approx_E_mst(p[1], n^(1/p[1])))
+approx2 = sapply(n, function(n) approx_E_mst(p[2], n^(1/p[2])))
+approx3 = sapply(n, function(n) approx_E_mst(p[3], n^(1/p[3])))
+approx4 = sapply(n, function(n) approx_E_mst(p[4], n^(1/p[4])))
+approx5 = sapply(n, function(n) approx_E_mst(p[5], n^(1/p[5])))
+```
+
+```{r}
+precalc1 = sapply(n, function(n) approx_E_mst_precalc(p[1], n^(1/p[1]), 400^(1/p[1])))
+precalc2 = sapply(n, function(n) approx_E_mst_precalc(p[2], n^(1/p[2]), 400^(1/p[2])))
+precalc3 = sapply(n, function(n) approx_E_mst_precalc(p[3], n^(1/p[3]), 400^(1/p[3])))
+precalc4 = sapply(n, function(n) approx_E_mst_precalc(p[4], n^(1/p[4]), 400^(1/p[4])))
+precalc5 = sapply(n, function(n) approx_E_mst_precalc(p[5], n^(1/p[5]), 400^(1/p[5])))
+```
+
+
+```{r}
+df_1 = data.frame(n=n,
+                  t=n^(1/p[1]),
+                  mean=c(means[,1], 
+                         sapply(n, function(n) E_crossings_p(p[1], n^(1/p[1]))),
+                         approx1,
+                         precalc1),
+                  sd=c(sqrt(vars[,1]), rep(NA, 3*length(n))),
+                  type = rep(c("MST", "Theoretical NNG", "Approximate MST", "Precalcualted Approx. MST"), each=length(n))) %>%
+  mutate(upper = ifelse(type == "MST", mean + sd, NA)) %>%
+  mutate(lower = ifelse(type == "MST", mean - sd, NA))
+
+df_2 = data.frame(n=n,
+                  t=n^(1/p[2]),
+                  mean=c(means[,2], 
+                         sapply(n, function(n) E_crossings_p(p[2], n^(1/p[2]))),
+                         approx2,
+                         precalc2),
+                  sd=c(sqrt(vars[,2]), rep(NA, 3*length(n))),
+                  type = rep(c("MST", "Theoretical NNG", "Approximate MST", "Precalcualted Approx. MST"), each=length(n))) %>%
+  mutate(upper = ifelse(type == "MST", mean + sd, NA)) %>%
+  mutate(lower = ifelse(type == "MST", mean - sd, NA))
+
+df_3 = data.frame(n=n,
+                  t=n^(1/p[3]),
+                  mean=c(means[,3], 
+                         sapply(n, function(n) E_crossings_p(p[3], n^(1/p[3]))),
+                         approx3,
+                         precalc3),
+                  sd=c(sqrt(vars[,3]), rep(NA, 3*length(n))),
+                  type = rep(c("MST", "Theoretical NNG", "Approximate MST", "Precalcualted Approx. MST"), each=length(n))) %>%
+  mutate(upper = ifelse(type == "MST", mean + sd, NA)) %>%
+  mutate(lower = ifelse(type == "MST", mean - sd, NA))
+
+df_4 = data.frame(n=n,
+                  t=n^(1/p[4]),
+                  mean=c(means[,4], 
+                         sapply(n, function(n) E_crossings_p(p[4], n^(1/p[4]))),
+                         approx4,
+                         precalc4),
+                  sd=c(sqrt(vars[,4]), rep(NA, 3*length(n))),
+                  type = rep(c("MST", "Theoretical NNG", "Approximate MST", "Precalcualted Approx. MST"), each=length(n))) %>%
+  mutate(upper = ifelse(type == "MST", mean + sd, NA)) %>%
+  mutate(lower = ifelse(type == "MST", mean - sd, NA))
+
+df_5 = data.frame(n=n,
+                  t=n^(1/p[5]),
+                  mean=c(means[,5], 
+                         sapply(n, function(n) E_crossings_p(p[5], n^(1/p[5]))),
+                         approx5,
+                         precalc5),
+                  sd=c(sqrt(vars[,5]), rep(NA, 3*length(n))),
+                  type = rep(c("MST", "Theoretical NNG", "Approximate MST", "Precalcualted Approx. MST"), each=length(n))) %>%
+  mutate(upper = ifelse(type == "MST", mean + sd, NA)) %>%
+  mutate(lower = ifelse(type == "MST", mean - sd, NA))
+```
+
+```{r}
+ggplot(df_1, aes(x=n, y=mean, color=type)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  geom_smooth(aes(color=type), method="loess", span=1.5, se=FALSE)
+
+ggplot(df_2, aes(x=n, y=mean, color=type)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  geom_smooth(aes(color=type), method="loess", span=1.5, se=FALSE)
+
+ggplot(df_3, aes(x=n, y=mean, color=type)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  geom_smooth(aes(color=type), method="loess", span=1.5, se=FALSE)
+
+ggplot(df_4, aes(x=n, y=mean, color=type)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  geom_smooth(aes(color=type), method="loess", span=1.5, se=FALSE)
+
+ggplot(df_5, aes(x=n, y=mean, color=type)) + 
+  geom_point() +
+  geom_errorbar(aes(ymin=lower, ymax=upper)) +
+  geom_smooth(aes(color=type), method="loess", span=1.5, se=FALSE)
+```
+
+```{r}
+comb_df = rbind(df_1[df_1$type == "MST",],
+              df_2[df_2$type == "MST",],
+              df_3[df_3$type == "MST",],
+              df_4[df_4$type == "MST",],
+              df_5[df_5$type == "MST",])
+comb_df$p = factor(rep(p, each=length(n)))
+
+ggplot(comb_df, aes(x=n, y=sd, color=p)) +
+  geom_point() + 
+  geom_smooth(aes(color=p), method="loess", span=1.5, se=FALSE)
+```
