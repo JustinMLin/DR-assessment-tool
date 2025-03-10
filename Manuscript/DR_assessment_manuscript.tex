@@ -20,10 +20,10 @@
 \begin{document}
 \maketitle
 
-\abstract{Technological advances have spurred an increase in data complexity and dimensionality. We are now in an era in which data sets containing thousands of features are commonplace. To digest and analyze such high-dimensional data, dimension reduction techniques have been developed and advanced along with computational power. Of these techniques, nonlinear methods are most commonly employed because of their ability to construct visually interpretable embeddings. Unlike linear methods, these methods unevenly stretch and shrink space to create a visual impression that reflects the structure of the high-dimensional data. Unfortunately, capturing high-dimensional structures in a significantly lower number of dimensions requires drastic manipulation of space. As such, nonlinear dimension reduction methods are known to occasionally create false structures, especially in noisy settings. In efforts to deal with this phenomenon, we developed an interactive tool that enables analysts to better understand and diagnose their dimension reduction results. It uses various analytical plots to provide a multi-faceted perspective on captured structures in the data to determine if they're faithful or consquences of the dimension reduction process. The tool is available in an R package named \textit{DRtool}.}
+\abstract{Technological advances have spurred an increase in data complexity and dimensionality. We are now in an era in which data sets containing thousands of features are commonplace. To digest and analyze such high-dimensional data, dimension reduction techniques have been developed and advanced along with computational power. Of these techniques, nonlinear methods are most commonly employed because of their ability to construct visually interpretable embeddings. Unlike linear methods, these methods non-uniformly stretch and shrink space to create a visual impression of the high-dimensional data. Since capturing high-dimensional structures in a significantly lower number of dimensions requires drastic manipulation of space, nonlinear dimension reduction methods are known to occasionally produce false structures, especially in noisy settings. In efforts to deal with this phenomenon, we developed an interactive tool that enables analysts to better understand and diagnose their dimension reduction results. It uses various analytical plots to provide a multi-faceted perspective on results to determine legitimacy. The tool is available via an R package named \textit{DRtool}.}
 
 \section{Introduction}
-The potency of nonlinear dimension reduction methods lies in their flexibility, allowing them to model complex data structures. That same flexibility, however, makes them difficult to use and interpret. Each method requires a slew of hyperparameters that need to be calibrated, and even when adequately calibrated, these methods require a trained eye to interpret. For example, the two most popular nonlinear dimension reduction methods, t-SNE and UMAP, are known to generate unintuitive results (\cite{understanding UMAP}, \cite{Distill}). The results often cluster, even when no clusters exist in the data, and cluster sizes/placements can be unreliable. We've developed an interactive tool that analysts may use to conduct a post-hoc analysis of their high-dimensional clustering. The tool uses the minimum spanning tree (MST) to model the global structure of clusters and provide an additional perspective on inter-cluster relationships. This allows analysts to extract more information from their dimension reduction results by making it easier to differentiate the signal and the noise.
+The potency of nonlinear dimension reduction methods lies in their flexibility, allowing them to model complex data structures. That same flexibility, however, makes them difficult to use and interpret. Each method requires a slew of hyperparameters that need to be calibrated, and even when adequately calibrated, these methods require a trained eye to interpret. For example, the two most popular nonlinear dimension reduction methods, t-SNE and UMAP, are known to generate unintuitive results (\cite{understanding UMAP}, \cite{Distill}). The results often cluster, even when no clusters exist in the data, and cluster sizes/placements can be unreliable. We've developed an interactive tool that analysts may use to conduct a post-hoc analysis of their high-dimensional clustering. The tool uses the minimum spanning tree (MST) to model the global structure of clusters and provide an additional perspective on inter-cluster relationships. This allows analysts to extract more information from their dimension reduction results by making it easier to differentiate the signal from the noise.
 
 \section{Methods}
 
@@ -43,9 +43,9 @@ To derive the inter-cluster relationships from the MST, we simplified the medoid
 \Require MST $T = (V, E)$ with cluster medoids $m_1, \hdots, m_k \in V$
 \State $T' = (V', E') \Leftarrow$ minimal subtree of $T$ containing all $m_i$
 \Repeat
-	\State Let $v \in V'$ with $deg(v) = 2$ and neighbors $a, b \in V'$. Let $d(v, a)$ and $d(v, b)$ be the weights of the edges connected $v$ and to $a$ and $b$.
-	\State Replace $v$ and its two incident edges with an edge connecting $a$ and $b$ with weight $d(v, a)$ and $d(v, b)$.
-\Until{$T'$ contains no longer contains non-medoid vertices with degree two}
+	\State Let $v \in V' \setminus \{m_1,  \hdots, m_k\}$ with $deg(v) = 2$ and neighbors $a, b \in V'$. Let $d(v, a)$ and $d(v, b)$ be the weights of the edges incident to $v$.
+	\State Replace $v$ and its two incident edges with an edge connecting $a$ and $b$ with weight $d(v, a) + d(v, b)$.
+\Until{$T'$ no longer contains non-medoid vertices with degree two.}
 \State \Output T'
 \end{algorithmic}
 \end{algorithm}
@@ -53,7 +53,7 @@ To derive the inter-cluster relationships from the MST, we simplified the medoid
 The simplification process essentially replaces paths of non-medoid vertices with one edge of equal length. We refer to this tree as the simplified medoid subtree. It encode global inter-cluster relationships within the data.
 
 \subsubsection{Robinson-Foulds Metric}
-To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{RF metric}. The R-F metric was originally introduced to quantify the dissimilarity of phylogenetic trees, but the algorithm generalizes to arbitrary weighted trees. It looks at partitions of each tree created by removing individual edges, then counts the number of partitions present in one tree but not in the other. We modified the algorithm (Algorithm 2) to specifically measure the dissimilarity in medoid vertices and applied a normalization so that the distances range from zero to one.
+To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{RF metric}. The R-F metric was originally introduced to quantify the dissimilarity of phylogenetic trees, but the algorithm generalizes to arbitrary weighted trees. It looks at partitions of each tree created by removing individual edges, then counts the number of partitions present in one tree but not in the other. We modified the algorithm (Algorithm 2) to specifically measure the dissimilarity in medoid vertices.
 
 \begin{algorithm}[H]
 \caption{Robinson-Foulds Distance}\label{algo2}
@@ -77,38 +77,70 @@ To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{
 \end{algorithmic}
 \end{algorithm}
 
-\subsection{The PCA -- rCCA Method}
-To understand the relationship between two specific clusters, the tool requires the user to specify a path connecting said clusters. Once a path is specified, a local projection method is applied to visualize the path and nearby points of interest in two dimensions.
+\subsection{The Tool}
+The main objective is to analyze and leverage the structural data embedded in the MST. For example, paths between clusters are used to study inter-cluster relationships in the context of the underlying manifold from which the data is drawn.
 
-Let $P \in \mathbb{R}^{k \times p}$ be the matrix of high-dimensional path points with endpoints $p_1, p_k \in \mathbb{R}^p$. Let $X \in \mathbb{R}^{n \times p}$ be the matrix of points of interest. By default, the points of interest include the path points and all points belonging to the same cluster as $p_1$ or $p_k$. Alternatively, the user may select their own points of interest.
+To start, the user must provide, at the very least, a data matrix, a low-dimensional embedding, and a clustering. From there, the MST is calculated and various analytical plots are provided. The primary plot is the low-dimensional embedding colored according to the provided clustering. There is an option to overlay the medoid MST to understand the global structure of the clusters. The medoid MST is the minimal subtree of the MST containing the medoid of each cluster.
 
-The idea is to use regularized canonical-correlation analysis (rCCA) to determine the two-dimensional linear projection that best unwinds the path. Given two data matrices with an equal number of rows, rCCA iteratively calculates linear combinations of the matrix features, known as canonical variate pairs, that maximize covariance. The canonical variate pairs are chosen to be orthogonal to all previous pairs, so they give rise to a projection subspace. To unwind $P$, we use CCA to compare $P$ against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
+The remaining plots require the user to select two groups of interest, which can be done interactively in one of two ways. One way is to select two endpoints. The MST path is calculated and projected onto the low-dimensional-embedding. The two groups are then the classes each endpoint belongs to. The second way is to select custom groups. The user may interact with the low-dimensional by drawing boundaries for each group. The projected path then connects the medoid of each group. Once the groups and path are specified, the user is provided additional plots used to investigate the relationship between the two selected groups of points.
+
+\subsection{Path Projection Plot}
+To better understand the path of interest, a local projection method is applied to visualize the path and nearby points in two dimensions. The goal of the projection is to "unwind" the path, so that it can be used to study the relationship between the two selected groups. We apply Principal Component Analysis followed by regularized Canonical Correlation Analysis in a method we've dubbed the PCA -- rCCA method.
+
+\subsubsection{The PCA -- rCCA Method}
+Let $P \in \mathbb{R}^{k \times p}$ be the matrix of high-dimensional path points with endpoints $p_1, p_k \in \mathbb{R}^p$. Let $X \in \mathbb{R}^{n \times p}$ be the matrix of points of interest, i.e. the points belonging to one of the selected groups and the points along the path.
+
+The concept is to use Canonical Correlation Analysis to determine the two-dimensional linear projection that best unwinds the path. Given two matrices, CCA iteratively calculates linear combinations of the matrix variates for each matrix, known as canonical variate pairs, that maximize covariance. These pairs are chosen to be orthogonal so that they give rise to a projection subspace. To unwind $P$, we use CCA to compare $P$ against the data matrix modeling a $d$-dimensional polynomial $$P_d = \begin{bmatrix}
 1 & 1^2 & \cdots & 1^d \\
 2 & 2^2 & \cdots & 2^d \\
 \vdots & \vdots & & \vdots \\
 n & n^2 & \cdots & n^d
 \end{bmatrix}$$
-and use the first two canonical variate pairs to construct a two-dimensional projection of $P$ that maximizes its covariance with $P_d$. This process generates a two-dimensional subspace on which we can project all of $X$. We use rCCA as opposed to ordinary CCA due to the high-dimensionality of $X$. Often times $p >> n$, leading to singular covariance matrices. The regularization constant is chosen using cross-validation. There is no regularization constant needed for $P_d$.
+and use the first two canonical variate pairs to construct a two-dimensional projection that maximizes the covariance between projections of $P$ and $P_d$. This process generates a two-dimensional subspace on which we can project all of $X$. Regularization is required to avoid singularity because $p$ is often much greater than $k$. The regularization constant for $P$ is chosen using cross-validation. No regularization constant is needed for $P_d$. See \cite{rCCA} for details.
 
-One issue with this method is the projected path often travels along the outskirts of the plot. This is due to the near-orthogonality of high-dimensional data \cite{near-orthogonal} caused by the large number of noise dimensions. Because the non-path points are often nearly orthogonal with the projection subspace, they are overly shrunk in the projection. The path points are less affected because the projection subspace is selected to retain the path's shape. While this phenomenon doesn't discredit the entire plot, it leads to misrepresentation of the path's location relative to the rest of the points.
+One issue with this method is the projected path often travels along the outskirts of the plot. This is due to the near-orthogonality of high-dimensional data \cite{near-orthogonal}. Because the non-path points are often nearly orthogonal with the projection subspace, they are overly shrunk in the projection. The path points are less affected because the projection subspace is selected to retain the path's shape. While this phenomenon doesn't discredit the entire plot, it leads to misrepresentation of the path's location relative to the rest of the points.
 
-To alleviate this issue, we propose a PCA -- CCA method. Prior to the CCA step, we first apply PCA on the entirety of $X$ to reduce the levels of noise. This prevents the confusion of excess noise for independence. When CCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
+To alleviate this issue, we apply PCA on the entirety of $X$ to prior to applying rCCA. Removing extraneous dimensions containing mostly noise prevents the confusion of excess noise for independence. When rCCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
 
-The tool allows the user to specify two different hyperparameters -- the dimension of the initial PCA projection and the degree of the CCA comparison polynomial. The percentage of the variance retained during the PCA process is provided. It is recommended the user scans through a range of numbers of dimensions. As the number of dimensions increases, the path will begin to circumvent the rest of the points but more inter-cluster separation might appear. A smaller number of dimensions is useful for understanding the path's trajectory with respect to the points, while a larger   number might be better for separating clusters.
+\subsection{MST Test}
+Another perspective on the relationship between the two selected groups can be gained by studying their connectivity in the MST. More specifically, the number of MST crossings between the two groups is a measure of separation. A large number of crossings indicates lesser separation, while a small number of crossings indicates more separation. This concept motivates a hypothesis test.
 
-To calibrate the degree of the CCA comparison polynomial, the user should scan over different values. In most cases, the path's shape will stabilize beyond a certain degree. It is recommended to set the degree to this degree of stabilization.
+\subsubsection{The Test Statistic}
+The test statistic is the number of crossings between the two groups, which is counted according to the following procedure. The minimal subtree containing both groups is isolated. Because the two groups may not be adjacent in the MST, this subtree may contain other clusters as well. To extract the structural relationship between the two groups of interest, the subtree must be simplified. The simplification process includes condensing paths between points of non-points of interest into a single edge, then collapsing edges between non-points of interest (Algorithm 3).  This procedure essentially collapses paths between the two groups of interest into edges that can be counted.
 
-\subsection{The Tool}
-After providing the original data matrix, the two-dimensional embedding data matrix, and a clustering, the user is met with a dashboard containing the low-dimensional plot colored according to the clustering and a sidebar with various settings. From there, the user must specify the path and points of interest in one of two ways -- by simply inputting the endpoints or defining their own custom clusters. The former method will use the path points and points belonging to the same cluster as either endpoint as the points of interest. The latter method will choose the (high-dimensional) medoids of the selected clusters as endpoints and use the path points in addition to the custom clusters as the points of interest.
+\begin{algorithm}[H]
+\caption{Simplify Subtree}\label{algo3}
+\begin{algorithmic}[3]
+\Require Tree $T = (V,E)$, group one vertices $V_1 \subset V$, and group two vertices $V_2 \subset V$
+\State $T' = (V', E') \Leftarrow$ minimal subtree of $T$ containing $V_1 \cup V_2$
+\Repeat
+	\State Let $v \in V' \setminus (V_1 \cup V_2)$ with $deg(v) = 2$ and neighbors $a, b \in V'$. Let $d(v, a)$ and $d(v, b)$ be the weights of the edges incident to $v$.
+	\State Replace $v$ and its two incident edges with an edge connecting $a$ and $b$ with weight $d(v, a) + d(v, b)$.
+\Until{$T'$ no longer contains non-group vertices with degree two.}
+\Repeat
+	\State Let $v_1, v_2 \in V' \setminus (V_1 \cup V_2)$ be adjacent.
+	\State Collapse the edge connecting $v_1$ and $v_2$. The combined vertex is adjacent to all neighbors of $v_1$ and $v_2$.
+\Until{$T'$ no longer adjacent non-group vertices.}
+\end{algorithmic}
+\end{algorithm}
 
-Once a path is chosen, its low-dimensional projection will overlay the low-dimensional embedding. Furthermore, the user will be presented with two analytical plots. The first plot will show the results of the PCA -- CCA method. The sidebar includes hyperparameter settings as well as a bandwidth adjustment. The bandwidth adjustment allows for a density overlay that may help users distinguish clusters. The second plot is a bar plot of path weights. The plot represents the weights of the original path in high dimension, so it provides insight on how the path was transformed throughout the dimension reduction process.
+To count the number of crossings, the number of edges between the two groups in the simplified subtree are counted. It is also possible for a non-point of interest to act as a mediator along a path between the two groups of interest. To account for this scenario, for each non-point of interest adjacent to both groups, we also count its maximal degree to both groups.
 
-Other settings include a viewing of the entire medoid subtree and path highlighting. The medoid subtree is helpful for understanding the global positioning of clusters, and the path-highlighting function allows the user to traverse along the path while highlighting the corresponding segment in all three plots.
+\subsubsection{The Null Distribution}
+The null distribution should represent the number of crossings in the case when both groups belong to the same cluster. The null distribution is simulated via the following process. Suppose the groups of interest contain $n$ and $m$ points specifically. $n+m$ points are sampled from a uniform distribution on a hyperrectangle whose side lengths are equal to the singular values of data matrix containing the groups of interest. These singular values correspond to the standard deviations of the data in the directions of the principal components. Extraneous dimensions are also removed to reduce noise. The number of crossings is then the number of edges crossing a splitting hyperplane.
+
+The simulation process yields an approximate distribution to which the test statistic is compared. The p-value is the percentile of the test statistic within this simulated distribution. A 1-sided test is employed because we are only interested in small values of the test statistic.
+
+\subsection{Heatmap}
+The heatmap is a very useful tool for comparing groups because they provide a feature-by-feature perspective. It pinpoints the exact features in which the two groups differ the most. The interactive heat map also allows users to select and analyze sub-heatmaps, provided a more focused view on specific features.
+
+\subsection{Meta Data Plot}
+Along with the data and clustering, the user may also supply meta data corresponding to the samples in the original data. The meta data for each group is presented via pie charts for categorical data and box plots for numerical data. These plots are useful for discovering trends in the data.
 
 \section{Results}
 
 \subsection{MST Stability Experiment}
-1,500 samples were randomly chosen from the MNIST data set of handwritten digits \cite{MNIST}. Each $784 \times 784$-pixel image was flattened into a vector of length $784^2$, so the data contain 1,500 samples in $784^2$ dimensions. A PCA pre-processing step was employed to reduce the number of dimensions to 300. The simplified medoid subtree $T$ was then calculated.
+1,500 samples were randomly chosen from the MNIST data set of handwritten digits \cite{MNIST}. Each $28 \times 28$-pixel image was flattened into a vector of length $28^2 = 784$, so the data contain 1,500 samples in $784$ dimensions. A PCA pre-processing step was employed to reduce the number of dimensions to 300. The simplified medoid subtree $T$ was then calculated.
 
 Random Gaussian noise was then added to the data and the new simplified medoid subtree $T'$ was calculated. The R-F distance $RF(T, T')$ was recorded. This process was repeated 30 times.
 
@@ -123,7 +155,7 @@ Random Gaussian noise was then added to the data and the new simplified medoid s
 To better interpret the R-F distances, we designed a null distribution of distances as a reference for comparison. These distances should represent R-F distances between trees that do not portray similar global structures and inter-cluster relationships. To generate the null distribution from the data, we randomly permuted the class labels and computed the R-F distances between the resulting simplified medoid subtrees and the original simplified medoid subtree. By randomly re-labelling the clusters, we are simulating examples with distinct global structures. Figure 1 shows the R-F distances produced by adding noise and permuting the class labels. The simplified medoid subtree trees generated by adding noise were significantly closer to the original simplified medoid subtree than those generated by randomly permuting the class labels in terms of R-F distance.
 
 \subsection{Using the Tool}
-To demonstrate how to use the tool, we explore the MNIST data in detail. Again, the $784 \times 784$-pixel images were flattened and 1,500 samples were randomly sampled. A PCA pre-processing step was applied prior to applying UMAP \cite{UMAP} to construct a two-dimensional embedding. To demonstrate the tool's utility, we study a k-means clustering instead of the true class labels (Figure 2). The reader may follow along using the \texttt{run\_example()} function in our \textit{DRtools} package.
+To demonstrate use of the tool, we explore the MNIST data set in detail. Again, the $784 \times 784$-pixel images were flattened and 1,500 samples were randomly sampled. A PCA pre-processing step was applied prior to applying UMAP \cite{UMAP} to construct a two-dimensional embedding. To replicate a real use case, we study a k-means clustering instead of the true class labels (Figure 2). The reader may follow along using the \texttt{run\_example(cluster="kmeans")} function in our \textit{DRtools} package.
 
 \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{2}
@@ -133,8 +165,52 @@ To demonstrate how to use the tool, we explore the MNIST data in detail. Again, 
 \caption{MNIST Embedding with k-Means Coloring}
 \end{figure*}
 
+At first glance, there are two major instances of disagreement between the low-dimensional embedding and the k-means clustering. Classes 1 and 2 seem to form one cluster together, while class 4 is split into two separate clusters. Let's take a closer look.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{3}
+\begin{figure*}[!b]
+\centering
+\includegraphics[scale=0.4]{class 1+2 projection}
+\caption{Projection of Path Between Classes 1 and 2}
+\end{figure*}
+
 \subsubsection{Classes 1 and 2}
-According to the UMAP embedding, classes 1 and 2 may have been incorrectly separated by the k-means clustering.
+There seems to be minimal separation between classes 1 and 2, suggesting they may correspond to the same digit. We select a path from point 25,483 in class 1 to point 44,483 in class 2. To get a closer look, we first look at the Path Projection Plot. There are two settings that must be calibrated -- Dimension and CCA Degree. Dimension refers to the dimensionality of the PCA step. It is recommended to start with a modestly large number of dimensions, say 100 in our case, which still retaines 97\% of the variance. CCA Degree refers to the degree $d$ of the polynomial design matrix $P_d$ used during the rCCA step. To calibrate $d$, the user should start with $d = 2$ and increment $d$ until the shape of the path stabilizes, which occurs at $d = 4$ in our case.
+
+The resulting plot depicts overlap between the two classes. Adjusting the bandwidth of the density estimate to 1.5 shows unimodal density, suggesting the two classes may come from the same population. Showing the MST edges also does not provide any evidence of separation. The MST test results, however, diverge. Only 18 crossings are counted when the approximate expectation under the null hypothesis is 29.33. This shortcoming could be due to the decreasing density. At the intersection of the two classes, the density is lower, leading to fewer crossings.
+
+Inspection of the handwritten digits themselves reveals an interesting trend. While the majority of samples from both classes depict the digit one, the angle of the stroke differs drastically between the classes (Figure 2). Following the path from class 1 to class 2, the angle of the stroke becomes less and less steep.
+
+The heatmap also shows the classes differ most in the sixth and seventh principal components. While this is less useful in this example as the principal components have no tangible meaning, one could backtrack the PCA results to determine which pixels were most correlated with the sixth and seventh principal components.
+
+Overall, the analytical plots provide context that the UMAP embedding alone does not. There is a gradual decline in density as you move across the combined cluster, which corresponds to increasingly slanted one digits. The MST test suggests there is meaningful difference between the one digits in each class, which is confirmed by the images themselves. Furthermore, the numerical difference between the two classes is highly correlated with the sixth and seventh principle components.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{4}
+\begin{figure*}[!b]
+\centering
+\includegraphics[scale=0.35]{class 4 projection}
+\caption{Projection of Path Between Class 4 Clusters}
+\end{figure*}
+
+\subsubsection{Class 4}
+Class 4 is split between two different clusters in the UMAP embedding. We use the drawing tool to select the two clusters as our groups. The path projection settings are calibrated to 100 dimensions and a CCA degree of three. We also select the Group Coloring setting so the points are colored according to group, rather than class. Analysis of the plot and estimated density does not provide evidence of separation. The MST edges, however, do. Close examination of the edges reveals a scarcity of inter-group edges (Figure 4). Even in overlapping regions, the edges tend to connect points belonging to the same group. This observation is confirmed by the MST test. Only 14 inter-group crossings are counted when the expectation of the null distribution is 30.19. It is unsurprising that the MST was able to detect the separation, while the PCA -- rCCA projection was not. The MST accounts for the high-dimensional manifold from which the data is sampled, while the local PCA -- rCCA projection does not. Moreover, linear projections tend to compress the data, especially when the reduction in dimension is this drastic.
+
+According to the true class labels, these clusters correspond to distinct digits. The top cluster, (group one) corresponds to the digit eight, while the bottom cluster (group two) corresponds to the digit five. It is certainly understandable how k-means was unable to distinguish these two digits.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{5}
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.37]{class 9 projection}
+\caption{Projection of Path Between Class 9 and Remainder of Cluster}
+\end{figure*}
+
+\subsection{Class 9}
+Class 9 is well-separated, but its cluster also contains some points from other classes, mainly class 6. To determine if these points should belong to the same class, we use the drawing tool to select the class 9 points and the remaining points in the cluster as our groups. The path projection settings are calibrated to 100 dimensions and a CCA degree of five. Together, the points form a unimodal cluster, as shown by the approximate density calculated with a bandwidth of 1.3 (Figure 5). Visually, there is also a consistent density of MST edges throughout the cluster, even where the two groups meet. The MST test agrees. There are 21 crossings counted, just below the expected number of 21.46 under the null hypothesis. All evidence points towards the merging of these two groups.
+
+According to the true class labels, this entire cluster corresponds with the digit six. The k-means clustering incorrectly scattered the points into multiple classes.
 
 \newpage
 
@@ -234,6 +310,11 @@ Gregory Paul M. Roz\'al and J.A. Hartigan.
 D. F. Robinson and L. R. Foulds.
 \newblock Comparison of Phylogenetic Trees.
 \newblock {\em Mathematical Biosciences 53, 131-147}, 1981.
+
+\bibitem{rCCA}
+Elena Tuzhilina. Leonardo Tozzi, and Trevor Hastie.
+\newblock Canonical correlation analysis in high dimensions with structured regularization.
+\newblock {\em Statistical Modelling 23(3):203-227}, 2023.
 
 \bibitem{Distill}
 Martin Wattenberg, Fernanda Vi\'egas, and Ian Johnson.

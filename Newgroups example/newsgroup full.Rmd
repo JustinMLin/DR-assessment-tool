@@ -1,0 +1,57 @@
+---
+title: "Newsgroup Full"
+author: "Justin Lin"
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(umap)
+library(ggplot2)
+
+set.seed(3003)
+```
+
+```{r}
+data <- Matrix::readMM("tfidf_word.mtx")
+```
+
+```{r}
+df <- read.csv("newsgroup_df.csv")
+labels_full <- df$category
+```
+
+
+```{r}
+library(reticulate)
+
+use_python("/opt/anaconda3/envs/skenv/bin/python")
+py_config()
+py_available()
+```
+
+```{r}
+X_full <- umap(data, method="umap-learn")$layout
+```
+
+```{r}
+subsample <- sample(1:nrow(X_full), 2000)
+
+Z <- data[subsample,]
+X <- X_full[subsample,]
+labels <- labels_full[subsample]
+```
+
+```{r}
+plotting_df <- data.frame(x=X[,1], y=X[,2], labels=labels)
+ggplot(plotting_df, aes(x=x, y=y, color=labels)) +
+  geom_point(size=0.5)
+```
+
+```{r}
+# devtools::instal_github("JustinMLin/DRtool")
+
+DRtool::run_app(as.matrix(Z), X, labels, parallel=T)
+```
