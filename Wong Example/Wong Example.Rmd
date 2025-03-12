@@ -1,0 +1,95 @@
+---
+title: "Wong Example"
+author: "Justin Lin"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(dplyr)
+library(ggplot2)
+library(umap)
+library(flowCore)
+
+set.seed(1635)
+```
+
+```{r}
+data <- read.csv("../../Wong example/Wong_data.csv")
+high_dim_data <- read.csv("../../Wong example/dataForUmap.csv")
+load("../../Wong example/organ_labels.rda")
+load("../../Wong example/cell_labels.rda")
+load("../../Wong example/high_dim_data1.rda")
+
+organ_labels <- names(organ_labels)
+```
+
+```{r}
+umap_data <- data %>%
+  select(c(UMAP1, UMAP2)) %>%
+  mutate(organ_labels=organ_labels, .before=1) %>%
+  mutate(cell_labels=cell_labels, .before=1)
+```
+
+```{r}
+sbsmpl <- sample(1:nrow(umap_data), 3000)
+
+ggplot(umap_data[sbsmpl,], aes(x=UMAP1, y=UMAP2, color=organ_labels)) +
+  geom_point(size=0.5)
+```
+
+```{r}
+library(reticulate)
+use_python("/opt/anaconda3/envs/skenv/bin/python")
+py_config()
+py_available()
+```
+
+
+```{r}
+lgcl <- logicleTransform(w=0.25, t=16409, m=4.5, a=0)
+ilgcl <- inverseLogicleTransform(trans = lgcl)
+trans_high_dim_data1 <- apply(high_dim_data1, 2, lgcl)
+
+umap_settings <- umap.defaults
+umap_settings$min_dist <- 0.2
+
+umap_exp <- umap(trans_high_dim_data1, config=umap_settings, method="umap-learn")
+```
+
+```{r}
+exp_df <- data.frame(x=umap_exp$layout[,1],
+                     y=umap_exp$layout[,2],
+                     organ_labels=organ_labels,
+                     cell_labels=cell_labels)
+
+ggplot(exp_df[sbsmpl,], aes(x=x, y=y, color=cell_labels)) +
+  geom_point(size=0.5)
+```
+
+
+```{r}
+Wong_kmeans <- kmeans(trans_high_dim_data1, centers=10, iter.max=15, nstart=20)$cluster
+
+cbind(exp_df, Wong_kmeans)[sbsmpl,] %>%
+  ggplot(aes(x=x, y=y, color=factor(Wong_kmeans))) +
+  geom_point(size=0.5)
+```
+
+
+```{r}
+Wong_high <- trans_high_dim_data1[sbsmpl,]
+Wong_low <- umap_exp$layout[sbsmpl,]
+Wong_organ_labels <- organ_labels[sbsmpl]
+Wong_cell_labels <- cell_labels[sbsmpl]
+Wong_kmeans <- Wong_kmeans[sbsmpl]
+
+save(Wong_high, file="../../DRtool/data/Wong_high.rda")
+save(Wong_low, file="../../DRtool/data/Wong_low.rda")
+save(Wong_organ_labels, file="../../DRtool/data/Wong_organ_labels.rda")
+save(Wong_cell_labels, file="../../DRtool/data/Wong_cell_labels.rda")
+save(Wong_kmeans, file="../../DRtool/data/Wong_kmeans.rda")
+```
+
