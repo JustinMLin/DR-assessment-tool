@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  12 MAR 2025 16:37
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  27 MAR 2025 16:37
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -610,20 +610,20 @@ Package: iftex 2022/02/03 v1.0f TeX engine tests
 )
 \openout1 = `DR_assessment_manuscript.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 20.
-LaTeX Font Info:    ... okay on input line 20.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 22.
+LaTeX Font Info:    ... okay on input line 22.
 
 (/usr/local/texlive/2023/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
@@ -681,12 +681,12 @@ e
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-LaTeX Font Info:    Trying to load font information for U+msa on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 23.
 
 (/usr/local/texlive/2023/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 21.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 23.
 
 
 (/usr/local/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -705,74 +705,76 @@ al/texlive/2023/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc}]
 <figures//RF stability.png, id=43, 1374.13374pt x 615.29875pt>
 File: figures//RF stability.png Graphic file (type png)
 <use figures//RF stability.png>
-Package pdftex.def Info: figures//RF stability.png  used on input line 151.
+Package pdftex.def Info: figures//RF stability.png  used on input line 157.
 (pdftex.def)             Requested size: 412.2433pt x 184.59105pt.
-<figures//MNIST kmeans.png, id=45, 934.49126pt x 464.73625pt>
+ [5]
+<figures//MNIST kmeans.png, id=48, 934.49126pt x 464.73625pt>
 File: figures//MNIST kmeans.png Graphic file (type png)
 <use figures//MNIST kmeans.png>
-Package pdftex.def Info: figures//MNIST kmeans.png  used on input line 164.
+Package pdftex.def Info: figures//MNIST kmeans.png  used on input line 172.
 (pdftex.def)             Requested size: 420.51718pt x 209.12938pt.
-<figures//class 1+2 projection.png, id=46, 1020.81375pt x 565.11125pt>
+<figures//class 1+2 projection.png, id=49, 1020.81375pt x 565.11125pt>
 File: figures//class 1+2 projection.png Graphic file (type png)
 <use figures//class 1+2 projection.png>
 Package pdftex.def Info: figures//class 1+2 projection.png  used on input line 
-174.
+182.
 (pdftex.def)             Requested size: 408.31827pt x 226.04048pt.
- [5 <./figures//RF stability.png>] [6 <./figures//MNIST kmeans.png> <./figures/
-/class 1+2 projection.png (PNG copy)>]
+
+[6 <./figures//RF stability.png> <./figures//MNIST kmeans.png>]
 <figures//class 4 projection.png, id=56, 1233.60875pt x 622.325pt>
 File: figures//class 4 projection.png Graphic file (type png)
 <use figures//class 4 projection.png>
 Package pdftex.def Info: figures//class 4 projection.png  used on input line 19
-3.
+9.
 (pdftex.def)             Requested size: 431.76953pt x 217.817pt.
-<figures//class 9 projection.png, id=57, 1081.03876pt x 477.785pt>
+ [7 <./figures//class 1+2 projection.png (PNG copy)>]
+<figures//class 9 projection.png, id=61, 1081.03876pt x 477.785pt>
 File: figures//class 9 projection.png Graphic file (type png)
 <use figures//class 9 projection.png>
-Package pdftex.def Info: figures//class 9 projection.png  used on input line 20
-6.
+Package pdftex.def Info: figures//class 9 projection.png  used on input line 21
+2.
 (pdftex.def)             Requested size: 399.97807pt x 176.77768pt.
- [7 <./figures//class 4 projection.png>] [8 <./figures//class 9 projection.png>
-] [9] (./DR_assessment_manuscript.aux) ) 
+ [8 <./figures//class 4 projection.png>]
+[9 <./figures//class 9 projection.png>] [10] (./DR_assessment_manuscript.aux) )
+ 
 Here is how much of TeX's memory you used:
- 16566 strings out of 476025
- 334723 string characters out of 5790018
- 1889388 words of memory out of 5000000
- 36699 multiletter control sequences out of 15000+600000
+ 16572 strings out of 476025
+ 334787 string characters out of 5790018
+ 1885388 words of memory out of 5000000
+ 36705 multiletter control sequences out of 15000+600000
  524095 words of font info for 77 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  117i,11n,118p,1336b,939s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/local/texlive/2023/texmf-dist/fon
-ts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/font
-s/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2023/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmcsc10.pfb></usr/local/texlive/2023/texmf-dist/fonts/t
-ype1/public/amsfonts/cmextra/cmex9.pfb></usr/local/texlive/2023/texmf-dist/font
-s/type1/public/amsfonts/cm/cmmi10.pfb></usr/local/texlive/2023/texmf-dist/fonts
-/type1/public/amsfonts/cm/cmmi6.pfb></usr/local/texlive/2023/texmf-dist/fonts/t
-ype1/public/amsfonts/cm/cmmi7.pfb></usr/local/texlive/2023/texmf-dist/fonts/typ
-e1/public/amsfonts/cm/cmmi9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1
-/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/p
-ublic/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/pub
-lic/amsfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/publi
-c/amsfonts/cm/cmr5.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/a
-msfonts/cm/cmr6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsf
-onts/cm/cmr7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfont
-s/cm/cmr8.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/c
-m/cmr9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/c
-msy10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-sy6.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy
-7.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.
-pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmti9.pf
-b></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb>
-</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.
-pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pf
-b></usr/local/texlive/2023/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb>
-
-Output written on DR_assessment_manuscript.pdf (9 pages, 724368 bytes).
+</usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb><
+/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></
+usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></us
+r/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmcsc10.pfb></us
+r/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cmextra/cmex9.pfb><
+/usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></
+usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi6.pfb></us
+r/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi7.pfb></usr/
+local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi9.pfb></usr/lo
+cal/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/loca
+l/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/
+texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/te
+xlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr5.pfb></usr/local/texli
+ve/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr6.pfb></usr/local/texlive/
+2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr7.pfb></usr/local/texlive/202
+3/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/local/texlive/2023/t
+exmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2023/texm
+f-dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb></usr/local/texlive/2023/texmf
+-dist/fonts/type1/public/amsfonts/cm/cmsy6.pfb></usr/local/texlive/2023/texmf-d
+ist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/local/texlive/2023/texmf-dis
+t/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/2023/texmf-dist/
+fonts/type1/public/amsfonts/cm/cmti9.pfb></usr/local/texlive/2023/texmf-dist/fo
+nts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2023/texmf-dist/font
+s/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/2023/texmf-dist/
+fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/2023/texmf-dist/fo
+nts/type1/public/cm-super/sfrm0800.pfb>
+Output written on DR_assessment_manuscript.pdf (10 pages, 728681 bytes).
 PDF statistics:
- 178 PDF objects out of 1000 (max. 8388607)
- 105 compressed objects within 2 object streams
+ 181 PDF objects out of 1000 (max. 8388607)
+ 107 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  38 words of extra memory for PDF output out of 10000 (max. 10000000)
 

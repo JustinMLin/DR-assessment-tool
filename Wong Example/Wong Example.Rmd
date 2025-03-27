@@ -65,13 +65,13 @@ exp_df <- data.frame(x=umap_exp$layout[,1],
                      organ_labels=organ_labels,
                      cell_labels=cell_labels)
 
-ggplot(exp_df[sbsmpl,], aes(x=x, y=y, color=cell_labels)) +
+ggplot(exp_df[sbsmpl,], aes(x=x, y=y, color=organ_labels)) +
   geom_point(size=0.5)
 ```
 
 
 ```{r}
-Wong_kmeans <- kmeans(trans_high_dim_data1, centers=10, iter.max=15, nstart=20)$cluster
+Wong_kmeans <- kmeans(trans_high_dim_data1, centers=8, iter.max=15, nstart=20)$cluster
 
 cbind(exp_df, Wong_kmeans)[sbsmpl,] %>%
   ggplot(aes(x=x, y=y, color=factor(Wong_kmeans))) +
