@@ -173,13 +173,13 @@ To demonstrate use of the tool, we explore the MNIST data set in detail. Again, 
 \caption{MNIST Embedding with k-Means Coloring}
 \end{figure*}
 
-At first glance, there are two major instances of disagreement between the low-dimensional embedding and the k-means clustering. Classes 1 and 2 seem to form one cluster together, while class 4 is split into two separate clusters. Let's take a closer look.
+At first glance, there are three major instances of disagreement between the low-dimensional embedding and the k-means clustering. Classes 1 and 2 seem to form one cluster together, class 4 is split into two separate clusters, and class 9 is merged with points from other clusters.
 
 \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{3}
 \begin{figure*}[!b]
 \centering
-\includegraphics[scale=0.4]{class 1+2 projection}
+\includegraphics[scale=0.4]{class 1+2 projection MNIST}
 \caption{Projection of Path Between Classes 1 and 2}
 \end{figure*}
 
@@ -196,7 +196,7 @@ Overall, the analytical plots provide context that the UMAP embedding alone does
 \renewcommand{\thefigure}{4}
 \begin{figure*}[!b]
 \centering
-\includegraphics[scale=0.35]{class 4 projection}
+\includegraphics[scale=0.35]{class 4 projection MNIST}
 \caption{Projection of Path Between Class 4 Clusters}
 \end{figure*}
 
@@ -209,7 +209,7 @@ According to the true class labels, these clusters correspond to distinct digits
 \renewcommand{\thefigure}{5}
 \begin{figure*}[!t]
 \centering
-\includegraphics[scale=0.37]{class 9 projection}
+\includegraphics[scale=0.37]{class 9 projection MNIST}
 \caption{Projection of Path Between Class 9 and Remainder of Cluster}
 \end{figure*}
 
@@ -219,7 +219,45 @@ Class 9 is well-separated, but its cluster also contains some points from other 
 According to the true class labels, this entire cluster corresponds with the digit six. The k-means clustering incorrectly scattered the points into multiple classes.
 
 \subsection{Mass Cytometry Data Set}
-We now explore a mass cytometry data set \cite{Wong data set} covering 35 samples originating eight distinct human tissues enriched for T and natural killer cells. The data is processed and labeled according to the procedure laid out \cite{UMAP example}.
+We now explore a mass cytometry data set \cite{Wong data set} covering 35 samples originating eight distinct human tissues enriched for T and natural killer cells. The data is processed and labeled inline with the procedure used in \cite{UMAP example}. To replicate a real use case, we explore a $k$-means clustering instead of the true class labels (Figure 6). The reader may follow along using \texttt{run\_example(example="Wong", cluster="kmeans")} function.
+
+Most of the $k$-means clustering seems to agree with the UMAP embedding. However, classes 4 and 8 are both split between two distinct clusters.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{6}
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.45]{Wong kmeans}
+\caption{Wong Embedding with $k$-Means Clustering}
+\end{figure*}
+
+\subsubsection{Class 4}
+Class 4 is split between two separate clusters in the UMAP embedding. To diagnose, we select the two custom clusters using the drawing tool. The path projection settings are calibrated to 20 degrees and a CCA degree of two. We also select the Group Coloring setting so the points are colored according to group, rather than class. The plot along with estimated density does not provide any evidence of separation (Figure 7). The two selected groups also have 18 crossings, larger than the null expectation of 15.62. All evidence indicates the two groups were sampled from the same population, in agreement with the $k$-means clustering.
+
+Turns out, the $k$-means cluster got it right. Together, these two groups make up the cells sampled from skin tissue. UMAP may have incorrectly split up the cluster or picked up on a property other than tissue location.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{7}
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.45]{class 4 projection Wong}
+\caption{Projection of Path Between Class 4 Clusters}
+\end{figure*}
+
+\subsection{Class 8}
+The majority of class 9 points lie in a self-contained cluster. However, the rest lie in a separate nearby cluster. We select the two class 8 clusters as out two groups and study the projection of the path between them. The path projection settings are calibrated to 20 dimensions and a CCA degree of three. Similar to the UMAP embedding, the path projection plot depicts one dense cluster containing a majority of the points. The remainder of the points fall to one side in a low-density region. There is certainly not enough evidence to conclude the two groups belong to separate clusters from this plot alone.
+
+Running the MST test returns interesting results. 17 crossings are counted when only 7.31 are expected with a standard error 2.791. The number of crossings are well above the number expected under the null hypothesis. This is due to the disparity in group densities. In order to preserve the size of the test, the null distribution must be constructed using a unimodal distribution whose density is similar to the that of the lesser-dense cluster (Section 2.4.2). This is why the expected number of crossings is so low. This phenomenon, however, has statistical meaning. The low relative density of group 1 provides minimal evidence from which we may draw conclusions. This lack of confidence is reflected in the low null expectation, and thus, the inflated p-value.
+
+Overall, there is not enough evidence to declare the two groups are correctly separated. This it not quite correct according to the true labels. The two groups were not sampled from the same type of tissue, but the situation is slightly more complicated. See \texttt{use\_example(example="Wong", cluster="real")} for details.
+
+\renewcommand{\figurename}{Figure}
+\renewcommand{\thefigure}{8}
+\begin{figure*}[!t]
+\centering
+\includegraphics[scale=0.45]{class 8 projection Wong}
+\caption{Projection of Path Between Class 8 Clusters}
+\end{figure*}
 
 \newpage
 
