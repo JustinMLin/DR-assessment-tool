@@ -1,0 +1,163 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Aggarwal, Hinneburg, and Keim}{Aggarwal
+  et~al.}{2001}]{Lp_norms}
+Aggarwal, C., A.~Hinneburg, and D.~Keim (2001).
+\newblock On the surprising behavior of distance metrics in high dimensional
+  space.
+\newblock In {\em ICDT '01: Proceedings of the 8th international conference on
+  database theory}, pp.\  420--434.
+
+\bibitem[\protect\citeauthoryear{amd Fernanda~Vi\'egas and Johnson}{amd
+  Fernanda~Vi\'egas and Johnson}{}]{Distill}
+amd Fernanda~Vi\'egas, M.~W. and I.~Johnson.
+\newblock How to use {t-SNE} effectively.
+\newblock \url{https://distill.pub/2016/misread-tsne/}.
+
+\bibitem[\protect\citeauthoryear{Becht, McInnes, Healy, Dutertre, Kwok, Ng,
+  Ginhoux, and Newell}{Becht et~al.}{2019}]{UMAP_example}
+Becht, E., L.~McInnes, J.~Healy, C.-A. Dutertre, I.~Kwok, L.~Ng, F.~Ginhoux,
+  and E.~Newell (2019).
+\newblock Dimensionality reduction for visualizing single-cell data using umap.
+\newblock {\em Nature Biotechnology\/}~{\em 37}, 38--44.
+
+\bibitem[\protect\citeauthoryear{Bhattacharya}{Bhattacharya}{2019}]{Friedman-Rafsky1}
+Bhattacharya, B. (2019).
+\newblock A general asymptotic framework for distribution-free graph-based
+  two-sample tests.
+\newblock {\em Journal of the Royal Statistical Society Series B: Statistical
+  Methodology\/}~{\em 81\/}(3), 575--602.
+
+\bibitem[\protect\citeauthoryear{Chen, Chen, and Su}{Chen
+  et~al.}{2018}]{Friedman-Rafsky3}
+Chen, H., X.~Chen, and Y.~Su (2018).
+\newblock A weighted edge-count two-sample test for multivariate and object
+  data.
+\newblock {\em Journal of the American Statistical Association\/}~{\em
+  113\/}(523), 1146--1155.
+
+\bibitem[\protect\citeauthoryear{Chen and Friedman}{Chen and
+  Friedman}{2017}]{Friedman-Rafsky2}
+Chen, H. and J.~Friedman (2017).
+\newblock A new graph-based two-sample test for multivariate and object data.
+\newblock {\em Journal of the American Statistical Association\/}~{\em
+  112\/}(517), 397--409.
+
+\bibitem[\protect\citeauthoryear{Coenen and Pearce}{Coenen and
+  Pearce}{}]{understanding_UMAP}
+Coenen, A. and A.~Pearce.
+\newblock Understanding umap.
+\newblock \url{https://pair-code.github.io/understanding-umap/}.
+
+\bibitem[\protect\citeauthoryear{Deng}{Deng}{2012}]{MNIST}
+Deng, L. (2012).
+\newblock The {MNIST} database of handwritten digit images for machine learning
+  research.
+\newblock {\em IEEE Signal Processing Magazine\/}~{\em 29\/}(6).
+
+\bibitem[\protect\citeauthoryear{{Di Ges\`u} and Starovoitov}{{Di Ges\`u} and
+  Starovoitov}{1999}]{image_metrics}
+{Di Ges\`u}, V. and V.~Starovoitov (1999).
+\newblock Distance-based functions for image comparison.
+\newblock {\em Pattern Recognition Letter\/}~{\em 20\/}(2), 207--214.
+
+\bibitem[\protect\citeauthoryear{Diaconis and Freedman}{Diaconis and
+  Freedman}{1984}]{near-orthogonal}
+Diaconis, P. and D.~Freedman (1984).
+\newblock Asymptotics of graphical projection pursuit.
+\newblock {\em The Annals of Statistics\/}~{\em 12\/}(3), 783--815.
+
+\bibitem[\protect\citeauthoryear{Friedman and Rafsky}{Friedman and
+  Rafsky}{1979}]{Friedman-Rafsky-test}
+Friedman, J. and L.~Rafsky (1979).
+\newblock Multivariate generalizations of the {Wald-Wolfowitz} and {Smirnov}
+  two-sample tests.
+\newblock {\em Annals of Statistics\/}~{\em 7\/}(4), 697--717.
+
+\bibitem[\protect\citeauthoryear{Gonz\'alez, D\'ejean, Martin, and
+  Baccini}{Gonz\'alez et~al.}{2008}]{CCA_package}
+Gonz\'alez, I., S.~D\'ejean, P.~Martin, and A.~Baccini (2008).
+\newblock Cca: An {R} package to extend canonical correlation analysis.
+\newblock ~{\em 23\/}(12).
+
+\bibitem[\protect\citeauthoryear{Gower and Ross}{Gower and
+  Ross}{1969}]{single-linkage}
+Gower, J. and G.~Ross (1969).
+\newblock Minimum spanning trees and single linkage cluster analysis.
+\newblock {\em Journal of the Royal Statistical Society Series C: Applied
+  Statistics\/}~{\em 18\/}(1), 54--64.
+
+\bibitem[\protect\citeauthoryear{King and Tidor}{King and
+  Tidor}{2009}]{MIST_example}
+King, B. and B.~Tidor (2009).
+\newblock {MIST}: Maximum information spanning trees for dimension reduction of
+  biological data sets.
+\newblock {\em Bioinformatics\/}~{\em 25\/}(9), 1156--1172.
+
+\bibitem[\protect\citeauthoryear{Li}{Li}{2011}]{Hyperspherical_cap}
+Li, S. (2011).
+\newblock Concise formulas for the area and volume of a hyperspherical cap.
+\newblock {\em Asian Journal of Mathematics and Statistics\/}~{\em 4\/}(1),
+  66--70.
+
+\bibitem[\protect\citeauthoryear{McInnes, Healy, Saul, and
+  Gro{\ss}berger}{McInnes et~al.}{2018}]{UMAP}
+McInnes, L., J.~Healy, N.~Saul, and L.~Gro{\ss}berger (2018).
+\newblock {UMAP}: Uniform manifold approximation and projection.
+\newblock {\em The Journal of Open Source Software\/}~{\em 3\/}(3).
+
+\bibitem[\protect\citeauthoryear{Probst and Reymond}{Probst and
+  Reymond}{2020}]{MST_example}
+Probst, D. and J.-L. Reymond (2020).
+\newblock Visualizing very large high-dimensional data sets as minimum spanning
+  trees.
+\newblock {\em Journal of Cheminformatics\/}~{\em 12\/}(12).
+
+\bibitem[\protect\citeauthoryear{Qurashi, Holmes, and Johnson}{Qurashi
+  et~al.}{2020}]{text_data}
+Qurashi, A., V.~Holmes, and A.~Johnson (2020).
+\newblock Document processing: methods for semantic text similarity analysis.
+\newblock {\em IEEE Xplore\/}.
+
+\bibitem[\protect\citeauthoryear{Robinson and Foulds}{Robinson and
+  Foulds}{1981}]{RF_metric}
+Robinson, D. and L.~Foulds (1981).
+\newblock Comparison of phylogenetic trees.
+\newblock {\em Mathematical Biosciences\/}~{\em 53}, 131--147.
+
+\bibitem[\protect\citeauthoryear{Roz\'al and Hartigan}{Roz\'al and
+  Hartigan}{1994}]{MAP_test}
+Roz\'al, G. and J.~Hartigan (1994).
+\newblock The {MAP} test for multimodality.
+\newblock {\em Journal of Classification\/}~{\em 11}, 5--36.
+
+\bibitem[\protect\citeauthoryear{Stuetzle}{Stuetzle}{2003}]{runt_pruning}
+Stuetzle, W. (2003).
+\newblock Estimating the cluster tree of a density by analyzing the minimal
+  spanning tree of a sample.
+\newblock {\em Journal of Classification\/}~{\em 20}, 25--47.
+
+\bibitem[\protect\citeauthoryear{Tenenbaum, {de Silva}, and Langfor}{Tenenbaum
+  et~al.}{2000}]{IsoMap}
+Tenenbaum, J., V.~{de Silva}, and J.~Langfor (2000).
+\newblock A global geometric framework for nonlinear dimensional reduction.
+\newblock {\em Science\/}~{\em 290\/}(2319).
+
+\bibitem[\protect\citeauthoryear{Tuzhilina, Tozzi, and Hastie}{Tuzhilina
+  et~al.}{2023}]{rCCA}
+Tuzhilina, E., L.~Tozzi, and T.~Hastie (2023).
+\newblock Canonical correlation analysis in high dimensions with structured
+  regularization.
+\newblock {\em Statistical Modelling\/}~{\em 23\/}(3), 203--227.
+
+\bibitem[\protect\citeauthoryear{Wong, Ong, Lim, Teng, McGovern, Narayanan, Ho,
+  Cerny, Tan, Anicete, Tan, Lim, Chan, Cheow, Lee, Takano, Tan, Tam, Tan, Chan,
+  and Newell}{Wong et~al.}{2016}]{Wong_data_set}
+Wong, M., D.~Ong, F.~Lim, K.~Teng, N.~McGovern, S.~Narayanan, W.~Ho, D.~Cerny,
+  H.~Tan, R.~Anicete, B.~Tan, T.~Lim, C.~Chan, P.~Cheow, S.~Lee, A.~Takano,
+  E.-H. Tan, J.~Tam, E.~Tan, J.~Chan, and E.~Newell (2016).
+\newblock A high-dimensional atlas of human {T} cell diversity reveals
+  tissue-specific trafficking and cytokine signatures.
+\newblock {\em ScienceDirect\/}~{\em 45\/}(2), 442--456.
+
+\end{thebibliography}

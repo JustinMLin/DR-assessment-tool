@@ -1,0 +1,57 @@
+This is BibTeX, Version 0.99d (TeX Live 2023)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: jcgs-template.aux
+The style file: chicago.bst
+Database file #1: ref.bib
+Warning--empty year in Distill
+Warning--empty year in understanding_UMAP
+Warning--page numbers missing in MNIST
+Warning--no journal in CCA_package
+Warning--page numbers missing in CCA_package
+Warning--page numbers missing in UMAP
+Warning--page numbers missing in MST_example
+Warning--no number and no volume in text_data
+Warning--page numbers missing in text_data
+Warning--page numbers missing in IsoMap
+You've used 24 entries,
+            2861 wiz_defined-function locations,
+            780 strings with 9100 characters,
+and the built_in function-call counts, 18792 in all, are:
+= -- 1518
+> -- 1650
+< -- 1
++ -- 526
+- -- 572
+* -- 1821
+:= -- 3463
+add.period$ -- 72
+call.type$ -- 24
+change.case$ -- 198
+chr.to.int$ -- 24
+cite$ -- 34
+duplicate$ -- 428
+empty$ -- 975
+format.name$ -- 652
+if$ -- 3429
+int.to.chr$ -- 1
+int.to.str$ -- 0
+missing$ -- 22
+newline$ -- 123
+num.names$ -- 240
+pop$ -- 150
+preamble$ -- 1
+purify$ -- 342
+quote$ -- 0
+skip$ -- 461
+stack$ -- 0
+substring$ -- 880
+swap$ -- 144
+text.length$ -- 1
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 480
+warning$ -- 10
+while$ -- 237
+width$ -- 0
+write$ -- 313
+(There were 10 warnings)
