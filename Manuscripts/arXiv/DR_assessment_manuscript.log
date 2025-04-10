@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  7 APR 2025 16:17
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.5.6)  10 APR 2025 15:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -841,104 +841,109 @@ put line 45.
 \c@algpx@indentEndPage-3=\count349
 \c@algpx@indentEndPage-4=\count350
  [4]
-<figures//RF stability.png, id=184, 1374.13374pt x 615.29875pt>
+<figures//RF stability.png, id=193, 1374.13374pt x 615.29875pt>
 File: figures//RF stability.png Graphic file (type png)
 <use figures//RF stability.png>
-Package pdftex.def Info: figures//RF stability.png  used on input line 155.
+Package pdftex.def Info: figures//RF stability.png  used on input line 174.
 (pdftex.def)             Requested size: 412.2433pt x 184.59105pt.
- [5 <./figures//RF stability.png>]
-<figures//MNIST kmeans.png, id=195, 934.49126pt x 464.73625pt>
+ [5]
+<figures//MNIST kmeans.png, id=203, 934.49126pt x 464.73625pt>
 File: figures//MNIST kmeans.png Graphic file (type png)
 <use figures//MNIST kmeans.png>
-Package pdftex.def Info: figures//MNIST kmeans.png  used on input line 170.
+Package pdftex.def Info: figures//MNIST kmeans.png  used on input line 189.
 (pdftex.def)             Requested size: 401.82341pt x 199.83269pt.
-<figures//class 1+2 projection MNIST.png, id=196, 1020.81375pt x 565.11125pt>
+<figures//class 1+2 projection MNIST.png, id=204, 1020.81375pt x 565.11125pt>
 File: figures//class 1+2 projection MNIST.png Graphic file (type png)
 <use figures//class 1+2 projection MNIST.png>
 Package pdftex.def Info: figures//class 1+2 projection MNIST.png  used on input
- line 183.
+ line 202.
 (pdftex.def)             Requested size: 387.91325pt x 214.7445pt.
-<figures//class 4 projection MNIST.png, id=197, 1233.60875pt x 622.325pt>
+
+[6 <./figures//RF stability.png>]
+<figures//class 4 projection MNIST.png, id=214, 1233.60875pt x 622.325pt>
 File: figures//class 4 projection MNIST.png Graphic file (type png)
 <use figures//class 4 projection MNIST.png>
 Package pdftex.def Info: figures//class 4 projection MNIST.png  used on input l
-ine 197.
+ine 216.
 (pdftex.def)             Requested size: 394.76286pt x 199.14806pt.
- [6 <./figures//MNIST kmeans.png>] [7 <./figures//class 1+2 projection MNIST.pn
-g (PNG copy)> <./figures//class 4 projection MNIST.png>]
-<figures//class 9 projection MNIST.png, id=214, 1081.03876pt x 477.785pt>
+ [7 <./figures//MNIST kmeans.png> <./figures//class 1+2 projection MNIST.png (P
+NG copy)>]
+<figures//class 9 projection MNIST.png, id=223, 1081.03876pt x 477.785pt>
 File: figures//class 9 projection MNIST.png Graphic file (type png)
 <use figures//class 9 projection MNIST.png>
 Package pdftex.def Info: figures//class 9 projection MNIST.png  used on input l
-ine 210.
+ine 229.
 (pdftex.def)             Requested size: 389.17366pt x 172.00246pt.
-<figures//Wong kmeans.png, id=215, 873.2625pt x 420.57124pt>
+<figures//Wong kmeans.png, id=224, 873.2625pt x 420.57124pt>
 File: figures//Wong kmeans.png Graphic file (type png)
 <use figures//Wong kmeans.png>
-Package pdftex.def Info: figures//Wong kmeans.png  used on input line 218.
+Package pdftex.def Info: figures//Wong kmeans.png  used on input line 237.
 (pdftex.def)             Requested size: 375.49554pt x 180.8421pt.
- [8 <./figures//class 9 projection MNIST.png> <./figures//Wong kmeans.png>]
-<figures//class 4 projection Wong.png, id=226, 872.25874pt x 419.5675pt>
+<figures//class 4 projection Wong.png, id=227, 872.25874pt x 419.5675pt>
 File: figures//class 4 projection Wong.png Graphic file (type png)
 <use figures//class 4 projection Wong.png>
 Package pdftex.def Info: figures//class 4 projection Wong.png  used on input li
-ne 236.
+ne 255.
 (pdftex.def)             Requested size: 409.96167pt x 197.19675pt.
-
-[9 <./figures//class 4 projection Wong.png>]
-<figures//class 8 projection Wong.png, id=235, 872.25874pt x 419.5675pt>
+ [8 <./figures//class 4 projection MNIST.png>] [9 <./figures//class 9 projectio
+n MNIST.png> <./figures//Wong kmeans.png>]
+<figures//class 8 projection Wong.png, id=244, 872.25874pt x 419.5675pt>
 File: figures//class 8 projection Wong.png Graphic file (type png)
 <use figures//class 8 projection Wong.png>
 Package pdftex.def Info: figures//class 8 projection Wong.png  used on input li
-ne 258.
+ne 277.
 (pdftex.def)             Requested size: 409.96167pt x 197.19675pt.
- [10 <./figures//class 8 projection Wong.png>] [11] [12]
-<figures//MNIST real.png, id=256, 934.49126pt x 464.73625pt>
+ [10 <./figures//class 4 projection Wong.png>] [11 <./figures//class 8 projecti
+on Wong.png>] (./DR_assessment_manuscript.bbl
+Underfull \hbox (badness 1194) in paragraph at lines 35--38
+[]\OT1/cmr/m/n/9 Andy Co-enen and Adam Pearce.  Un-der-stand-ing umap.  []$\OT1
+/cmtt/m/n/9 https : / / pair-[]code . github . io /
+ []
+
+) [12]
+<figures//MNIST real.png, id=265, 934.49126pt x 464.73625pt>
 File: figures//MNIST real.png Graphic file (type png)
 <use figures//MNIST real.png>
-Package pdftex.def Info: figures//MNIST real.png  used on input line 414.
+Package pdftex.def Info: figures//MNIST real.png  used on input line 314.
 (pdftex.def)             Requested size: 392.48366pt x 195.18788pt.
 
 pdfTeX warning (ext4): destination with the same identifier (name{figure.1}) ha
 s been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.415 \caption{MNIST Embedding with True Labels}
+l.315 \caption{MNIST Embedding with True Labels}
                                                 
-<figures//Wong real.png, id=257, 873.2625pt x 420.57124pt>
+<figures//Wong real.png, id=266, 873.2625pt x 420.57124pt>
 File: figures//Wong real.png Graphic file (type png)
 <use figures//Wong real.png>
-Package pdftex.def Info: figures//Wong real.png  used on input line 420.
+Package pdftex.def Info: figures//Wong real.png  used on input line 320.
 (pdftex.def)             Requested size: 392.9645pt x 189.25531pt.
 
 pdfTeX warning (ext4): destination with the same identifier (name{figure.2}) ha
 s been already used, duplicate ignored
 <to be read again> 
                    \relax 
-l.421 \caption{Wong Embedding with True Labels}
+l.321 \caption{Wong Embedding with True Labels}
                                                 [13
 
  <./figures//MNIST real.png> <./figures//Wong real.png>] (./DR_assessment_manus
 cript.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
 Package rerunfilecheck Info: File `DR_assessment_manuscript.out' has not change
 d.
-(rerunfilecheck)             Checksum: B0B1002183BD140A12E55FC1F34E5EF8;3297.
+(rerunfilecheck)             Checksum: 7D04E6A5F3F2575EE9B85EEF54B5EBCF;3599.
  )
 (\end occurred inside a group at level 1)
 
 ### simple group (level 1) entered at line 26 ({)
 ### bottom level 
 Here is how much of TeX's memory you used:
- 23053 strings out of 476025
- 437988 string characters out of 5790018
+ 23054 strings out of 476025
+ 437886 string characters out of 5790018
  1890388 words of memory out of 5000000
  43015 multiletter control sequences out of 15000+600000
- 524095 words of font info for 77 fonts, out of 8000000 for 9000
+ 524432 words of font info for 78 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 117i,11n,118p,1334b,1006s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 117i,11n,118p,1296b,1006s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts
 /cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/
 cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/c
@@ -964,11 +969,12 @@ e/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb></usr/local/texlive/
 23/texmf-dist/fonts/type1/public/amsfonts/cm/cmtt9.pfb></usr/local/texlive/2023
 /texmf-dist/fonts/type1/public/amsfonts/symbols/msbm10.pfb></usr/local/texlive/
 2023/texmf-dist/fonts/type1/public/cm-super/sfrm0600.pfb></usr/local/texlive/20
-23/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb>
-Output written on DR_assessment_manuscript.pdf (13 pages, 1106788 bytes).
+23/texmf-dist/fonts/type1/public/cm-super/sfrm0800.pfb></usr/local/texlive/2023
+/texmf-dist/fonts/type1/public/cm-super/sfrm0900.pfb>
+Output written on DR_assessment_manuscript.pdf (13 pages, 1118005 bytes).
 PDF statistics:
- 394 PDF objects out of 1000 (max. 8388607)
- 307 compressed objects within 4 object streams
- 75 named destinations out of 1000 (max. 500000)
- 263 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 405 PDF objects out of 1000 (max. 8388607)
+ 316 compressed objects within 4 object streams
+ 72 named destinations out of 1000 (max. 500000)
+ 279 words of extra memory for PDF output out of 10000 (max. 10000000)
 

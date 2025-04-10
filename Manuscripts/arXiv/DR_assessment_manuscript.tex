@@ -26,15 +26,15 @@
 \abstract{Technological advances have spurred an increase in data complexity and dimensionality. We are now in an era in which data sets containing thousands of features are commonplace. To digest and analyze such high-dimensional data, dimension reduction techniques have been developed and advanced along with computational power. Of these techniques, nonlinear methods are most commonly employed because of their ability to construct visually interpretable embeddings. Unlike linear methods, these methods non-uniformly stretch and shrink space to create a visual impression of the high-dimensional data. Since capturing high-dimensional structures in a significantly lower number of dimensions requires drastic manipulation of space, nonlinear dimension reduction methods are known to occasionally produce false structures, especially in noisy settings. In efforts to deal with this phenomenon, we developed an interactive tool that enables analysts to better understand and diagnose their dimension reduction results. It uses various analytical plots to provide a multi-faceted perspective on results to determine legitimacy. The tool is available via an R package named \href{https://www.github.com/justinmlin/DRtool}{DRtool}.
 
 \section{Introduction}
-The potency of nonlinear dimension reduction methods lies in their flexibility, allowing them to model complex data structures. That same flexibility, however, makes them difficult to use and interpret. Each method requires a slew of hyperparameters that need to be calibrated, and even when adequately calibrated, these methods require a trained eye to interpret. For example, the two most popular nonlinear dimension reduction methods, t-SNE and UMAP, are known to generate unintuitive results \cite{understanding UMAP, Distill}. The results often cluster, even when no clusters exist in the data, and cluster sizes/locations can be unreliable. We've developed an interactive tool that analysts may use to conduct a post-hoc analysis of their high-dimensional clustering. The tool uses the minimum spanning tree (MST) to model the global structure of clusters and provide an additional perspective on inter-cluster relationships. This allows analysts to extract more information from their dimension reduction results by making it easier to differentiate the signal and the noise.
+The potency of nonlinear dimension reduction methods lies in their flexibility, allowing them to model complex data structures. That same flexibility, however, makes them difficult to use and interpret. Each method requires a slew of hyperparameters that need to be calibrated, and even when adequately calibrated, these methods require a trained eye to interpret. For example, the two most popular nonlinear dimension reduction methods, t-SNE and UMAP, are known to generate unintuitive results \cite{understanding_UMAP, Distill}. The results often cluster, even when no clusters exist in the data, and cluster sizes/locations can be unreliable. We've developed an interactive tool that analysts may use to conduct a post-hoc analysis of their high-dimensional clustering. The tool uses the minimum spanning tree (MST) to model the global structure of clusters and provide an additional perspective on inter-cluster relationships. This allows analysts to extract more information from their dimension reduction results by making it easier to differentiate the signal and the noise.
 
 In this paper, we describe the analytical plots provided by the tool (Section 2). We present a MST stability experiment, demonstrating the MST's ability to approximate high-dimensional structure (Section 3). And we walk through use of the tool on two separate data sets (Section 4).
 \section{Methods}
 
 \subsection{The Minimum Spanning Tree}
-Graphs have been applied to many multivariate statistical problems. The authors of \cite{MAP test} introduced the minimal ascending path spanning tree as a way to test for multimodality. The Friedman-Rafsky test \cite{Friedman-Rafsky test}, along with its modern variations \cite{Friedman-Rafsky variation 1, Friedman-Rafsky variation 2, Friedman-Rafsky variation 3}, use the MST to construct a multivariate two-sample test. Single-linkage clustering \cite{single-linkage and MST} and runt pruning \cite{runt pruning} are both intimately related to the MST. In the context of dimension reduction, IsoMap \cite{IsoMap} makes use of neighborhood graphs, \cite{MIST example} introduces the maximum information spanning tree, and \cite{MST example} uses the MST. These methods, which fall under the category of manifold learning, use graphs to model high-dimensional data assumed to be drawn uniformly from a high-dimensional manifold. An accurate low-dimensional embedding can then be constructed from these graphs. It's apparent that graphs are useful for modeling high-dimensional data, especially when it comes to dimension reduction and cluster analysis. Our tool uses the MST to analyze the reliability of visualizations produced by nonlinear dimension reduction methods.
+Graphs have been applied to many multivariate statistical problems. The authors of \cite{MAP_test} introduced the minimal ascending path spanning tree as a way to test for multimodality. The Friedman-Rafsky test \cite{Friedman-Rafsky_test}, along with its modern variations \cite{Friedman-Rafsky1, Friedman-Rafsky2, Friedman-Rafsky3}, use the MST to construct a multivariate two-sample test. Single-linkage clustering \cite{single-linkage} and runt pruning \cite{runt_pruning} are both intimately related to the MST. In the context of dimension reduction, IsoMap \cite{IsoMap} makes use of neighborhood graphs, \cite{MIST_example} introduces the maximum information spanning tree, and \cite{MST_example} uses the MST. These methods, which fall under the category of manifold learning, use graphs to model high-dimensional data assumed to be drawn uniformly from a high-dimensional manifold. An accurate low-dimensional embedding can then be constructed from these graphs. It's apparent that graphs are useful for modeling high-dimensional data, especially when it comes to dimension reduction and cluster analysis. Our tool uses the MST to analyze the reliability of visualizations produced by nonlinear dimension reduction methods.
 
-We've opted for the MST for a couple of key properties. Firstly, the MST and shortest paths along it are quick to compute. Secondly, the MST contains a unique path between any two vertices, providing a well-defined metric on the data. Lastly, it provides a good summary of the data's structure. It contains as a subgraph the nearest-neighbor graph, and any edge deletion in the MST partitions the vertices into two sets for which the deleted edge is the shortest distance between them \cite{Friedman-Rafsky test}.
+We've opted for the MST for a couple of key properties. Firstly, the MST and shortest paths along it are quick to compute. Secondly, the MST contains a unique path between any two vertices, providing a well-defined metric on the data. Lastly, it provides a good summary of the data's structure. It contains as a subgraph the nearest-neighbor graph, and any edge deletion in the MST partitions the vertices into two sets for which the deleted edge is the shortest distance between them \cite{Friedman-Rafsky_test}.
 
 \subsubsection{MST Stability}
 The MST is meant to provide a robust estimation of the data's global structure, and more specifically, inter-cluster relationships. As such, it should be stable in the presence of noise and unaffected by local perturbations of the data. To demonstrate MST stability, we study the effect of random noise on the inter-cluster relationships explained by the MST.
@@ -55,7 +55,7 @@ To derive the inter-cluster relationships from the MST, we first take the medoid
 \end{algorithm}
 
 \subsubsection{Robinson-Foulds Metric}
-To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{RF metric}. The R-F metric was originally introduced to quantify the dissimilarity of phylogenetic trees, but the algorithm generalizes to arbitrary weighted trees. It looks at partitions of each tree created by removing individual edges, then counts the number of partitions present in one tree but not in the other. We modified the algorithm (Algorithm 2) to specifically measure the dissimilarity in medoid vertices.
+To compare simplified medoid subtrees, we used the Robinson-Foulds metric \cite{RF_metric}. The R-F metric was originally introduced to quantify the dissimilarity of phylogenetic trees, but the algorithm generalizes to arbitrary weighted trees. It looks at partitions of each tree created by removing individual edges, then counts the number of partitions present in one tree but not in the other. We modified the algorithm (Algorithm 2) to specifically measure the dissimilarity in medoid vertices.
 
 \begin{algorithm}[b]
 \caption{Robinson-Foulds Distance}\label{algo2}
@@ -104,6 +104,11 @@ One issue with this method is the projected path often travels along the outskir
 
 To alleviate this issue, we apply PCA on the entirety of $X$ to prior to applying rCCA. Removing extraneous dimensions containing mostly noise limits the confusion of excess noise for independence. When rCCA is applied post-PCA, the projected path's relative position to the rest of the points is more credible.
 
+\subsubsection{Calibrating Hyperparameters}
+The user is responsible for calibrating the dimensionality of the PCA step and the degree $d$ of the reference polynomial design matrix. To pick a number of dimensions, the user is recommended to start with a moderately large number, relative to the dimensionality of the original data. The proportion of variance retained in the selected number of dimensions is conveniently displayed in the upper righthand corner of the plot. A larger number of dimensions retains more information, but may misrepresent the location of the path relative to the rest of the points, while a smaller number of dimensions may diminish some of the variation in the data. As such, the user is encourages to try different numbers of dimensions. To calibrate $d$, it is recommended to start with $d = 2$ then increment $d$ until the the shape of the path stabilizes.
+
+The user is also given the option to overlay a kernel density estimate. In order to do so, the bandwidth must be calibrated. The recommend procedure is to begin with a large bandwidth that estimates one mode, then gradually decrease the bandwidth until two modes appear. If the two modes correspond with the two groups of interest, and more modes do not immediately appear when continuing to decrease the bandwidth, then a bimodal distribution is a reasonable way to describe the data.
+
 \subsection{MST Test}
 Another perspective on the relationship between the two selected groups can be gained by studying their connectivity in the MST. In particular, the number of MST crossings between the two groups serves as a measure of separation. A large number of crossings indicates lesser separation, while a small number of crossings indicates more separation. This idea motivates a hypothesis test.
 
@@ -129,11 +134,25 @@ The test statistic is the number of crossings between the two groups, which is c
 To count the number of crossings, the number of edges between the two groups in the simplified subtree are counted. It is also possible for a point of non-interest to act as a mediator along a path between the two groups of interest. To account for this scenario, for each point of non-interest adjacent to both groups, we also count its maximal degree to both groups.
 
 \subsubsection{The Null Distribution}
-The null distribution should represent the number of crossings in the case when both groups belong to the same cluster. Hence, we consider a uniform distribution on a hyperrectangle whose side lengths are proportional to the singular values of the appropriate cluster. The proportionality constant is $\sqrt{12}$, so the variances of this distribution in each principal direction are equal to the variances of the data in the direction of each principal component. Extraneous dimensions are removed to reduce noise. Once the points are sampled, the MST is calculated, and the number of edges crossing a splitting hyperplane is recorded.
+The null distribution should represent the number of crossings in the case when both groups belong to the same cluster. Therefore, the composite null hypothesis must account for all distributions the cluster may have been drawn from. This family of distributions is constructed as follows. For simplicity, assume the one-dimensional case. We aim to construct a family $\mathcal{F}$ of unimodal distributions on $[-1,1]$ from which the cluster may have been drawn from. Let $n_1$ and $n_2$ be the sample sizes of each group, respectively. The family contains all distribution functions $f:[-1,1] \to \mathbb{R}_{\geq 0}$ satisfying the following criteria:
+\begin{itemize}
+	\item there exists $c \in [-1,1]$ such that $f$ is increasing on $[-1,c]$ and decreasing on $[c,1]$,
+	\item $\int_{-1}^0 f(x) \:dx = \frac{n_1}{n_1+n_2}$, and
+	\item $\int_0^1 f(x) \:dx = \frac{n_2}{n_1+n_2}$.
+\end{itemize}
+The hyperplane is located at $x = 0$, and the number of crossings is assumed to scale with $f(0)$, the density at the hyperplane. To ensure the test has the correct size, the null distribution that maximizes the probability of rejection must be used. That way, the null would also be rejected under any other member of the composite null hypothesis, ensuring the probability of Type I error does not exceed the pre-determined significance level under any $f \in \mathcal{F}$.
 
-To determine the number of points to be sampled, we must consider the density of the data. This is a largely important decision as the number of edge crossings is determined by the local density near the splitting hyperplane. There are many reasonable ways to determine the sample size, but to ensure our test has the correct size, we must select the sample size that maximizes the probability of rejection under the null hypothesis. That way, the null would also be rejected under any other reasonable sample size. The probability of rejection is maximized when the alpha quantile of the null distribution is minimized, i.e. when the simulated number of crossings is minimized. Therefore, we tune the sample size to match the lesser density of the two clusters.
+It is not difficult to see
+$$f'(x) = \begin{cases}
+\frac{n_1}{n_1+n_2} & -1 \leq x < 0\\
+\textrm{min}(\frac{n_1}{n_1+n_2}, \frac{n_2}{n_1+n_2}) & x = 0\\
+\frac{n_2}{n_1+n_2} & 0 < x \leq 1
+\end{cases}$$
+minimizes $f'(0)$. $f'$ is uniform on each side of the splitting hyperplane, and $f'(0)$ is equal to the lesser of the densities of each group.
 
-The density of each cluster is approximated by the number of samples divided by the product of singular values after truncation $$D_i = \frac{n_i}{\prod_j \sigma_j^i} \textrm{ for } i=1,2.$$ If $i_0 = \argmin_i D_i$, then $n_{i_0}$ points are sampled from the hyperrectangle with side lengths $\sqrt{12}\sigma_j^{i_0}$. The simulation process yields an approximate distribution to which the test statistic is compared to. The p-value is the percentile of the test statistic within this simulated distribution. A 1-sided test is employed because we are only interested in rejecting the null given sufficiently small values of the test statistic.
+Generalizing to higher dimension, we consider a uniform distribution on a hyperrectangle. The density of the distribution is determined by the lesser of the densities of each individual group. The density of each cluster is approximated by the number of samples divided by the product of singular values after truncating extraneous dimensions, $$D_i = \frac{n_i}{\prod_j \sigma_j^i} \textrm{ for } i=1,2.$$ In principle, there are ways other than the product of singular values to estimate cluster volume, but high-dimensional clusters often appear rectangular due to under-sampling and near-orthogonality \cite{near-orthogonal}.
+
+Now suppose $D_1 \leq D_2$, i.e. group one is less dense than group two. Then $n_1$ points are sampled from a hyperrectangle with side lengths $\sqrt{12}\sigma_j^{1}$. The scaling factor of $\sqrt{12}$ ensures the variance in each principal direction of the uniform distribution is equal to the variance contained in each principal component of the group one data. Once the points are sampled, the MST is calculated, and the number of edges crossing a splitting hyperplane is recorded. The simulation process yields an approximate distribution to which the test statistic is compared. The $p$-value is the percentile of the test statistic within this simulated distribution. A 1-sided test is employed because we are only interested in rejecting the null given sufficiently small values of the test statistic.
 
 \subsection{Heatmap}
 The heatmap is a very useful tool for comparing groups because it provides a feature-by-feature perspective. It pinpoints the exact features in which the two groups differ the most. The interactive heatmap also allows users to select and analyze sub-heatmaps, providing a more focused view on specific features. The features are ordered according to difference in group means.
@@ -174,7 +193,7 @@ To demonstrate use of the tool, we explore the MNIST data set in detail. Again, 
 At first glance, there are three major instances of disagreement between the low-dimensional embedding and the k-means clustering. Classes 1 and 2 seem to form one cluster together, class 4 is split into two separate clusters, and class 9 is merged with points from other clusters.
 
 \subsubsection{Classes 1 and 2}
-There seems to be minimal separation between classes 1 and 2, suggesting they may correspond to the same digit. We select a path from point 25,483 in class 1 to point 44,483 in class 2. To get a closer look, we first look at the Path Projection Plot. There are two settings that must be calibrated -- Dimension and CCA Degree. Dimension refers to the dimensionality of the PCA step. It is recommended to start with a moderately large number of dimensions, say 100, which still retains 97\% of the variance. CCA Degree refers to the degree $d$ of the polynomial design matrix $P_d$ used during the rCCA step. To calibrate $d$, the user should start with $d = 2$ and increment $d$ until the shape of the path stabilizes, which occurs at $d = 4$ in our case.
+There seems to be minimal separation between classes 1 and 2, suggesting they may correspond to the same digit. We select a path from point 25,483 in class 1 to point 44,483 in class 2. To get a closer look, we first look at the Path Projection Plot. The chosen number of dimensions is 100, which retains 97\% of the variance, and the path stabilizes at a degree of $d = 4$.
 
 \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{3}
@@ -225,9 +244,9 @@ Class 9 is well-separated, but its cluster also contains some points from other 
 According to the true class labels, this entire cluster corresponds with the digit six (Figure S1). The k-means clustering incorrectly scattered the points into multiple classes.
 
 \subsection{Mass Cytometry Data Set}
-We now explore a mass cytometry data set \cite{Wong data set} covering 35 samples originating eight distinct human tissues enriched for T and natural killer cells. The data is processed and labeled inline with the procedure used in \cite{UMAP example}. To replicate a real use case, we explore a $k$-means clustering instead of the true class labels (Figure 6). The reader may follow along using the \texttt{run\_example(example="Wong", cluster="kmeans")} function.
+We now explore a mass cytometry data set \cite{Wong_data_set} covering 35 samples originating eight distinct human tissues enriched for T and natural killer cells. The data is processed and labeled inline with the procedure used in \cite{UMAP_example}. To replicate a real use case, we explore a $k$-means clustering instead of the true class labels (Figure 6). The reader may follow along using the \texttt{run\_example(example="Wong", cluster="kmeans")} function.
 
-Most of the $k$-means clustering seems to agree with the UMAP embedding. However, classes 4 and 8 are both split between two distinct clusters.
+Most of the $k$-means clustering seems to agree with the UMAP embedding. However, classes 4 and 8 are both split between two distinct clusters. Class 3 is also separated into three smaller sub-clusters.
 
 \renewcommand{\figurename}{Figure}
 \renewcommand{\thefigure}{7}
@@ -240,7 +259,7 @@ Most of the $k$-means clustering seems to agree with the UMAP embedding. However
 \subsubsection{Class 4}
 Class 4 is split between two separate clusters in the UMAP embedding. To diagnose, we select the two custom clusters using the drawing tool. The path projection settings are calibrated to 20 degrees and a CCA degree of two. We also select the Group Coloring setting so the points are colored according to group, rather than class. The plot along with the estimated density does not provide any evidence of separation (Figure 7). The two selected groups also have 18 crossings, larger than the null expectation of 15.62. All evidence indicates the two groups were sampled from the same population, in agreement with the $k$-means clustering.
 
-To better understand why these two clusters are separated despite minimal evidence of separation, we reference the heatmap and meta data. According to the heatmap, the two groups differ most in CD8 T cell counts. This is confirmed by the cell labels provided by \cite{UMAP example}, which were passed to the tool as meta data. So while separation wasn't observed by the MST, the discrepancy in CD8 T cell counts accounts for the splitting of the class 4 points.
+To better understand why these two clusters are separated despite minimal evidence of separation, we reference the heatmap and meta data. According to the heatmap, the two groups differ most in CD8 T cell counts. This is confirmed by the cell labels provided by \cite{UMAP_example}, which were passed to the tool as meta data. So while separation wasn't observed by the MST, the discrepancy in CD8 T cell counts accounts for the splitting of the class 4 points.
 
 Turns out, the $k$-means cluster got it right. Together, these two groups make up the cells sampled from skin tissue (Figure S2). Within the skin tissue cells, however, exist two subgroups differentiated by CDB T cell count.
 
@@ -259,6 +278,8 @@ Overall, there is not enough evidence to declare the two groups are correctly se
 \caption{Projection of Path Between Class 8 Clusters}
 \end{figure*}
 
+\subsection{Class 3}
+The class 3 points are separated into three clusters -- two larger, elongated clusters to the left, and one smaller cluster to the right. Analysis of the path projection plots and MST tests does not capture any evidence of separation. However, the heatmap and meta data provide much-needed context. The two larger clusters to the left are completely disjoint in their CD161 gene counts, but very similar in all other variables. Meanwhile, the third smaller cluster is distinct from the other two larger clusters in its TCRgD counts. The meta data also reveals the left two clusters consist of CD8 T cells, while the right cluster consists of Tgd cells. So while the disparity in one isolated variable between each pair of clusters was captured by UMAP, but not the MST, the heatmap and meta were able to recoup the missing information.
 \section{Discussion}
 We have introduced our R package, \textit{DRtool}, and exemplified its use cases. The MST serves as an effective medium for understanding high-dimensional relationships and structures. The various analytical tools provided by the package allow the user to extract a maximal amount of information from the MST by providing multiple prospectives. Such a multi-faceted view is necessary to understand contemporary dimension reduction methods that are trying to fit hundreds, or even thousands, of dimensions-worth of information into only two dimensions. Advances in multiple fields have lead to a surge in complex data, necessitating tools such as ours that help analysts assess and affirm their dimension reduction results.
 
@@ -271,129 +292,8 @@ All data and code a freely available at \url{https://wwww.github.com/JustinMLin/
 
 \newpage
 
-\begin{thebibliography}{99}
-
-\bibitem{fractional Lp norms}
-Charu C. Aggarwal, Alexander Hinneburg, and Daniel A. Keim.
-\newblock On the surprising behavior of distance metrics in high dimensional space.
-\newblock {\em Lecture Notes in Computer Science, vol. 1973}, 2001.
-
-\bibitem{UMAP example}
-Becht et al.
-\newblock Dimensionality reduction for visualizing single-cell data using UMAP.
-\newblock {\em Nature Biotechnology 37:38-44}, 2019.
-
-\bibitem{Friedman-Rafsky variation 1}
-Bhaswar B. Bhattacharya.
-\newblock A general asymptotic framework for distribution-free graph-based two-sample tests.
-\newblock {\em Journal of the Royal Statistical Society Series B: Statistical Methodology 81:3, 575-602}, 2019.
-
-\bibitem{Friedman-Rafsky variation 2}
-Hao Chen and Jerome H. Friedman.
-\newblock A new graph-based two-sample test for multivariate and object data.
-\newblock {\em Journal of the American Statistical Association 112:517, 397-409}, 2017.
-
-\bibitem{Friedman-Rafsky variation 3}
-Hao Chen, Xu Chen, and Yi Su.
-\newblock A weighted edge-count two-sample test for multivariate and object data.
-\newblock {\em Journal of the American Statistical Association 113:523, 1146-1155}, 2018.
-
-\bibitem{understanding UMAP}
-Andy Coenen and Adam Pearce for Google PAIR.
-\newblock Understanding UMAP.
-\newblock {\em https://pair-code.github.io/understanding-umap/}.
-
-\bibitem{MNIST}
-Li Deng.
-\newblock The MNIST database of handwritten digit images for machine learning research.
-\newblock {\em IEEE Signal Processing Magazine 29:6}, 2012.
-
-\bibitem{near-orthogonal}
-Persi Diaconis and David Freedman.
-\newblock Asymptotics of graphical projection pursuit.
-\newblock {\em The Annals of Statistics 12:3, 783-815}, 1984.
-
-\bibitem{image metrics}
-Vito Di Ges\`u and Valery Starovoitov.
-\newblock Distance-based functions for image comparison.
-\newblock {\em Pattern Recognition Letters 20:2, 207-214}, 1999.
-
-\bibitem{CCA package}
-Gonz\'alez et al.
-\newblock CCA: An R package to extend canonical correlation analysis.
-\newblock {\em Journal of Statistical Software 23:13}, 2008.
-
-\bibitem{single-linkage and MST}
-J. C. Gower and G. J. S. Ross.
-\newblock Minimum spanning trees and single linkage cluster analysis.
-\newblock {\em Journal of the Royal Statistical Society. Series C (Applied Statistics) 18:1, 54-64}, 1969.
-
-\bibitem{Friedman-Rafsky test}
-Jerome H. Friedman and Lawrence C. Rafsky.
-\newblock Multivariate generalizations of the Wald-Wolfowitz and Smirnov two-sample tests.
-\newblock {\em Annals of Statistics 7:4, 697-717}, 1979.
-
-\bibitem{MIST example}
-Bracken M. King and Bruce Tidor.
-\newblock MIST: Maximum information spanning trees for dimension reduction of biological data sets.
-\newblock {\em Bioinformatics 25:9, 1165-1172}, 2009.
-
-\bibitem{Hyperspherical cap}
-Shengqiao Li.
-\newblock Concise formulas for the area and volume of a hyperspherical cap.
-\newblock {\em Asian Journal of Mathematics and Statistics 4(1):66-70}, 2011.
-
-\bibitem{UMAP}
-Leland McInnes et al.
-\newblock UMAP: Uniform Manifold Approximation and Projection.
-\newblock {\em The Journal of Open Source Software 3:29}, 2018.
-
-\bibitem{text data}
-Abdul Wahab Qurashi, Violeta Holmes, and Anju P. Johnson.
-\newblock Document processing: Methods for semantic text similarity analysis.
-\newblock {\em IEEE}, 2020.
-
-\bibitem{runt pruning}
-Werner Stuetzle.
-\newblock Estimating the cluster tree of a density by analyzing the minimal spanning tree of a sample.
-\newblock {\em Journal of Classification 20, 25-47}, 2003.
-
-\bibitem{IsoMap}
-Joshua B. Tenenbaum, Vin de Silva, and John C. Langford.
-\newblock A global geometric framework for nonlinear dimensionality reduction.
-\newblock {\em Science 290:2319}, 2000.
-
-\bibitem{MST example}
-Daniel Probst and Jean-Louis Reymond.
-\newblock Visualization of very large high-dimensional data sets as minimum spanning trees.
-\newblock {\em Journal of Cheminformatics 12:12}, 2020.
-
-\bibitem{MAP test}
-Gregory Paul M. Roz\'al and J.A. Hartigan.
-\newblock The MAP test for multimodality.
-\newblock {\em Journal of Classification 11, 5-36}, 1994.
-
-\bibitem{RF metric}
-D. F. Robinson and L. R. Foulds.
-\newblock Comparison of Phylogenetic Trees.
-\newblock {\em Mathematical Biosciences 53, 131-147}, 1981.
-
-\bibitem{rCCA}
-Elena Tuzhilina. Leonardo Tozzi, and Trevor Hastie.
-\newblock Canonical correlation analysis in high dimensions with structured regularization.
-\newblock {\em Statistical Modelling 23(3):203-227}, 2023.
-
-\bibitem{Distill}
-Martin Wattenberg, Fernanda Vi\'egas, and Ian Johnson.
-\newblock How to Use t-SNE Effectively.
-\newblock {\em Distill}, 2016.
-
-\bibitem{Wong data set}
-Wong et al.
-\newblock A high-dimensional atlas of human T cell diversity reveals tissue-specific trafficking and cytokine signatures.
-\newblock {\em ScienceDirect 45(2):442-456}, 2016.
-
-\end{thebibliography}
+\bibliographystyle{plain}
+\bibliography{ref}
 
 \newpage
 

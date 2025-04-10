@@ -1,0 +1,115 @@
+\begin{thebibliography}{10}
+
+\bibitem{Distill}
+Martin~Wattenberg amd Fernanda~Vi\'egas and Ian Johnson.
+\newblock How to use {t-SNE} effectively.
+\newblock \url{https://distill.pub/2016/misread-tsne/}.
+
+\bibitem{UMAP_example}
+Etienne Becht, Leland McInnes, John Healy, Charles-Antoine Dutertre, Immanuel
+  Kwok, Lai Ng, Florent Ginhoux, and Evan Newell.
+\newblock Dimensionality reduction for visualizing single-cell data using umap.
+\newblock {\em Nature Biotechnology}, 37:38--44, 2019.
+
+\bibitem{Friedman-Rafsky1}
+Bhaswar Bhattacharya.
+\newblock A general asymptotic framework for distribution-free graph-based
+  two-sample tests.
+\newblock {\em Journal of the Royal Statistical Society Series B: Statistical
+  Methodology}, 81(3):575--602, 2019.
+
+\bibitem{Friedman-Rafsky3}
+Hao Chen, Xu~Chen, and Yi~Su.
+\newblock A weighted edge-count two-sample test for multivariate and object
+  data.
+\newblock {\em Journal of the American Statistical Association},
+  113(523):1146--1155, 2018.
+
+\bibitem{Friedman-Rafsky2}
+Hao Chen and Jerome Friedman.
+\newblock A new graph-based two-sample test for multivariate and object data.
+\newblock {\em Journal of the American Statistical Association},
+  112(517):397--409, 2017.
+
+\bibitem{understanding_UMAP}
+Andy Coenen and Adam Pearce.
+\newblock Understanding umap.
+\newblock \url{https://pair-code.github.io/understanding-umap/}.
+
+\bibitem{MNIST}
+Li~Deng.
+\newblock The {MNIST} database of handwritten digit images for machine learning
+  research.
+\newblock {\em IEEE Signal Processing Magazine}, 29(6), 2012.
+
+\bibitem{near-orthogonal}
+Persi Diaconis and David Freedman.
+\newblock Asymptotics of graphical projection pursuit.
+\newblock {\em The Annals of Statistics}, 12(3):783--815, 1984.
+
+\bibitem{Friedman-Rafsky_test}
+Jerome Friedman and Lawrence Rafsky.
+\newblock Multivariate generalizations of the {Wald-Wolfowitz} and {Smirnov}
+  two-sample tests.
+\newblock {\em Annals of Statistics}, 7(4):697--717, 1979.
+
+\bibitem{single-linkage}
+JC~Gower and GJS Ross.
+\newblock Minimum spanning trees and single linkage cluster analysis.
+\newblock {\em Journal of the Royal Statistical Society Series C: Applied
+  Statistics}, 18(1):54--64, 1969.
+
+\bibitem{MIST_example}
+Bracken King and Bruce Tidor.
+\newblock {MIST}: Maximum information spanning trees for dimension reduction of
+  biological data sets.
+\newblock {\em Bioinformatics}, 25(9):1156--1172, 2009.
+
+\bibitem{UMAP}
+Leland McInnes, John Healy, Nathaniel Saul, and Lukas Gro{\ss}berger.
+\newblock {UMAP}: Uniform manifold approximation and projection.
+\newblock {\em The Journal of Open Source Software}, 3(3), 2018.
+
+\bibitem{MST_example}
+Daniel Probst and Jean-Louis Reymond.
+\newblock Visualizing very large high-dimensional data sets as minimum spanning
+  trees.
+\newblock {\em Journal of Cheminformatics}, 12(12), 2020.
+
+\bibitem{RF_metric}
+DF~Robinson and LR~Foulds.
+\newblock Comparison of phylogenetic trees.
+\newblock {\em Mathematical Biosciences}, 53:131--147, 1981.
+
+\bibitem{MAP_test}
+GPM Roz\'al and JA~Hartigan.
+\newblock The {MAP} test for multimodality.
+\newblock {\em Journal of Classification}, 11:5--36, 1994.
+
+\bibitem{runt_pruning}
+Werner Stuetzle.
+\newblock Estimating the cluster tree of a density by analyzing the minimal
+  spanning tree of a sample.
+\newblock {\em Journal of Classification}, 20:25--47, 2003.
+
+\bibitem{IsoMap}
+Joshua Tenenbaum, Vin {de Silva}, and John Langfor.
+\newblock A global geometric framework for nonlinear dimensional reduction.
+\newblock {\em Science}, 290(2319), 2000.
+
+\bibitem{rCCA}
+Elena Tuzhilina, Leonardo Tozzi, and Trevor Hastie.
+\newblock Canonical correlation analysis in high dimensions with structured
+  regularization.
+\newblock {\em Statistical Modelling}, 23(3):203--227, 2023.
+
+\bibitem{Wong_data_set}
+Michael Wong, David Ong, Frances Lim, Karen Teng, Naomi McGovern, Sriram
+  Narayanan, Wen Ho, Daniela Cerny, Henry Tan, Rosslyn Anicete, Bien Tan, Tony
+  Lim, Chung Chan, Peng Cheow, Ser Lee, Angela Takano, Eng-Huat Tan, John Tam,
+  Ern Tan, Jerry Chan, and Evan Newell.
+\newblock A high-dimensional atlas of human {T} cell diversity reveals
+  tissue-specific trafficking and cytokine signatures.
+\newblock {\em ScienceDirect}, 45(2):442--456, 2016.
+
+\end{thebibliography}
